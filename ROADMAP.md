@@ -48,7 +48,7 @@ These unlock most of the roadmap:
 
 ---
 
-## v1.0 — "A real daily driver" (next milestone)
+## v1.0 — "A real daily driver" ✅ COMPLETE
 
 | Theme | Feature |
 |-------|---------|
@@ -62,7 +62,7 @@ These unlock most of the roadmap:
 | Data | Manual backup & restore ✅ |
 | Data | Export to Markdown ✅ + PDF (PDF deferred) |
 | Polish | Preferences screen ✅ (font size, week-start; theme to follow) |
-| Polish | Keyboard shortcuts + first-run welcome |
+| Polish | Keyboard shortcuts + first-run welcome ✅ |
 
 **Build order:** foundations → writing → organize → data → polish.
 

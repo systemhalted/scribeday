@@ -59,4 +59,12 @@ class SettingsTest {
         raw.set(Settings.THEME, "midnight");   // not a real Theme
         assertEquals(Theme.LIGHT, new Settings(raw).theme());
     }
+
+    @Test
+    void welcomeShownDefaultsToFalseAndRoundTrips() {
+        Settings settings = new Settings(dao());
+        assertEquals(false, settings.welcomeShown());
+        settings.setWelcomeShown(true);
+        assertEquals(true, settings.welcomeShown());
+    }
 }

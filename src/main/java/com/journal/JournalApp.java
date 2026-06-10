@@ -2,6 +2,7 @@ package com.journal;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import javafx.application.Application;
@@ -63,10 +64,17 @@ public class JournalApp extends Application {
         stage.setMinWidth(460);
         stage.setMinHeight(460);
         stage.show();
+
+        maybeShowWelcome(stage);
     }
 
     private MenuBar buildMenuBar(Stage stage) {
+        MenuItem newEntry = new MenuItem("New Entry (Today)");
+        newEntry.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
+        newEntry.setOnAction(e -> openEntry(stage, LocalDate.now()));
+
         MenuItem preferences = new MenuItem("Preferences…");
+        preferences.setAccelerator(new KeyCodeCombination(KeyCode.COMMA, KeyCombination.CONTROL_DOWN));
         preferences.setOnAction(e ->
                 new PreferencesDialog(stage, settings, () -> {
                     settings.theme().applyTo(scene);
@@ -83,10 +91,11 @@ public class JournalApp extends Application {
         exportAll.setOnAction(e -> exportAll(stage));
 
         MenuItem quit = new MenuItem("Quit");
+        quit.setAccelerator(new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN));
         quit.setOnAction(e -> Platform.exit());
 
-        Menu file = new Menu("File", null, preferences, new SeparatorMenuItem(),
-                backup, restore, exportAll, new SeparatorMenuItem(), quit);
+        Menu file = new Menu("File", null, newEntry, new SeparatorMenuItem(), preferences,
+                new SeparatorMenuItem(), backup, restore, exportAll, new SeparatorMenuItem(), quit);
 
         MenuItem find = new MenuItem("Find…");
         find.setAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN));
@@ -158,6 +167,25 @@ public class JournalApp extends Application {
                 alert(Alert.AlertType.ERROR, "Restore failed", ex.getMessage());
             }
         });
+    }
+
+    private void openEntry(Stage stage, LocalDate date) {
+        new JournalEditorDialog(stage, dao, settings, date).showAndWait();
+        refreshViews();
+    }
+
+    private void maybeShowWelcome(Stage stage) {
+        if (settings.welcomeShown()) {
+            return;
+        }
+        settings.setWelcomeShown(true);
+        if (!dao.recentEntries(1).isEmpty()) {
+            return;   // existing journal (e.g. migrated/restored): skip the welcome
+        }
+        alert(Alert.AlertType.INFORMATION, "Welcome to Calendar Journal",
+                "Click any day to write your first entry — it saves automatically.\n\n"
+                        + "Ctrl+N starts today's entry · Ctrl+F searches · "
+                        + "the View menu switches between Calendar and Agenda.");
     }
 
     private void exportAll(Stage stage) {

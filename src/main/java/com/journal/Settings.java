@@ -11,6 +11,7 @@ public class Settings {
     public static final String EDITOR_FONT_SIZE = "editor.font.size";
     public static final String WEEK_START = "calendar.week.start";
     public static final String THEME = "app.theme";
+    public static final String WELCOME_SHOWN = "app.welcome.shown";
 
     public static final int DEFAULT_EDITOR_FONT_SIZE = 14;
     public static final DayOfWeek DEFAULT_WEEK_START = DayOfWeek.SUNDAY;
@@ -49,5 +50,13 @@ public class Settings {
 
     public void setTheme(Theme theme) {
         dao.set(THEME, theme.name());
+    }
+
+    public boolean welcomeShown() {
+        return dao.getBoolean(WELCOME_SHOWN, false);
+    }
+
+    public void setWelcomeShown(boolean shown) {
+        dao.setBoolean(WELCOME_SHOWN, shown);
     }
 }
