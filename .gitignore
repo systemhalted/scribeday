@@ -1,0 +1,3 @@
+target/
+journal.db
+*.class
