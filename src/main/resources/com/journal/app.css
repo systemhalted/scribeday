@@ -1,0 +1,26 @@
+/* Base / light theme. Shared structural styling for all themes. */
+
+.month-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.weekday-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #555555;
+}
+
+.day-cell {
+    -fx-font-size: 14px;
+}
+
+.entry-dot {
+    -fx-text-fill: #1a7f37;
+    -fx-font-size: 10px;
+}
+
+.day-cell.today {
+    -fx-background-color: #d6e9ff;
+    -fx-border-color: #1a7f37;
+    -fx-border-width: 2;
+}

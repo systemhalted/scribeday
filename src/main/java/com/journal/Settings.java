@@ -10,9 +10,11 @@ public class Settings {
 
     public static final String EDITOR_FONT_SIZE = "editor.font.size";
     public static final String WEEK_START = "calendar.week.start";
+    public static final String THEME = "app.theme";
 
     public static final int DEFAULT_EDITOR_FONT_SIZE = 14;
     public static final DayOfWeek DEFAULT_WEEK_START = DayOfWeek.SUNDAY;
+    public static final Theme DEFAULT_THEME = Theme.LIGHT;
 
     private final SettingsDao dao;
 
@@ -39,5 +41,13 @@ public class Settings {
 
     public void setWeekStart(DayOfWeek day) {
         dao.set(WEEK_START, day.name());
+    }
+
+    public Theme theme() {
+        return Theme.fromName(dao.get(THEME, DEFAULT_THEME.name()), DEFAULT_THEME);
+    }
+
+    public void setTheme(Theme theme) {
+        dao.set(THEME, theme.name());
     }
 }

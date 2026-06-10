@@ -40,4 +40,23 @@ class SettingsTest {
         raw.set(Settings.WEEK_START, "FUNDAY");   // not a real DayOfWeek
         assertEquals(DayOfWeek.SUNDAY, new Settings(raw).weekStart());
     }
+
+    @Test
+    void themeDefaultsToLight() {
+        assertEquals(Theme.LIGHT, new Settings(dao()).theme());
+    }
+
+    @Test
+    void themeRoundTrips() {
+        Settings settings = new Settings(dao());
+        settings.setTheme(Theme.DARK);
+        assertEquals(Theme.DARK, settings.theme());
+    }
+
+    @Test
+    void themeFallsBackWhenStoredValueIsInvalid() {
+        SettingsDao raw = dao();
+        raw.set(Settings.THEME, "midnight");   // not a real Theme
+        assertEquals(Theme.LIGHT, new Settings(raw).theme());
+    }
 }

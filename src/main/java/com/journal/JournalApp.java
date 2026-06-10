@@ -19,6 +19,7 @@ public class JournalApp extends Application {
 
     private JournalDao dao;
     private Settings settings;
+    private Scene scene;
 
     @Override
     public void init() {
@@ -38,7 +39,8 @@ public class JournalApp extends Application {
         root.setTop(buildMenuBar(stage, view));
         root.setCenter(view);
 
-        Scene scene = new Scene(root, 580, 560);
+        scene = new Scene(root, 580, 560);
+        settings.theme().applyTo(scene);
         stage.setTitle("Calendar Journal");
         stage.setScene(scene);
         stage.setMinWidth(460);
@@ -49,7 +51,10 @@ public class JournalApp extends Application {
     private MenuBar buildMenuBar(Stage stage, CalendarView view) {
         MenuItem preferences = new MenuItem("Preferences…");
         preferences.setOnAction(e ->
-                new PreferencesDialog(stage, settings, view::refresh).showAndWait());
+                new PreferencesDialog(stage, settings, () -> {
+                    settings.theme().applyTo(scene);   // re-apply theme live
+                    view.refresh();
+                }).showAndWait());
 
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction(e -> Platform.exit());

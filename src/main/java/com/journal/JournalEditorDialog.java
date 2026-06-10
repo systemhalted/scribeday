@@ -73,5 +73,6 @@ public class JournalEditorDialog extends Stage {
         root.setBottom(buttons);
 
         setScene(new Scene(root, 560, 460));
+        settings.theme().applyTo(getScene());
     }
 }

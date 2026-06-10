@@ -30,7 +30,8 @@ These unlock most of the roadmap:
 - **JavaFX migration** ✅ — Swing UI ported to JavaFX (`JournalApp`, `CalendarView`,
   `JournalEditorDialog`), reusing `JournalDao` unchanged. `org.openjfx` deps shaded into
   the fat jar via a non-Application `Launcher`; `.deb` repackaged with the JavaFX runtime.
-  (CSS theming / `WebView` Markdown / charts still to come in later v1.0 steps.)
+  CSS theming + Light/Dark toggle ✅ (external `app.css`/`dark.css`, theme in Preferences,
+  applied to all windows). `WebView` Markdown / charts still to come in later v1.0 steps.
 - **DB schema v2 + migrations** ✅ — versioned schema (`schema_version` + ordered steps).
   New shape: `entries(id, entry_date, title, content, mood, created_at, updated_at)`,
   `tags`, `entry_tags`, and an FTS5 `entries_fts` table (trigger-synced) for search.
@@ -51,7 +52,7 @@ These unlock most of the roadmap:
 
 | Theme | Feature |
 |-------|---------|
-| Foundation | JavaFX migration + CSS theming + light/dark toggle |
+| Foundation | JavaFX migration + CSS theming + light/dark toggle ✅ |
 | Foundation | Stable app data dir + schema migrations |
 | Writing | Autosave + unsaved-changes guard |
 | Writing | Entry title + word/character count |

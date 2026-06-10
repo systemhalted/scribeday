@@ -49,15 +49,36 @@ public class PreferencesDialog extends Stage {
             }
         });
 
+        ComboBox<Theme> theme = new ComboBox<>();
+        theme.getItems().addAll(Theme.LIGHT, Theme.DARK);
+        theme.setValue(settings.theme());
+        theme.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Theme t) {
+                if (t == null) {
+                    return "";
+                }
+                String name = t.name().toLowerCase(Locale.ROOT);
+                return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            }
+
+            @Override
+            public Theme fromString(String s) {
+                return Theme.valueOf(s.toUpperCase(Locale.ROOT));
+            }
+        });
+
         GridPane form = new GridPane();
         form.setHgap(12);
         form.setVgap(12);
-        form.addRow(0, new Label("Editor font size:"), fontSize);
-        form.addRow(1, new Label("Week starts on:"), weekStart);
+        form.addRow(0, new Label("Theme:"), theme);
+        form.addRow(1, new Label("Editor font size:"), fontSize);
+        form.addRow(2, new Label("Week starts on:"), weekStart);
 
         Button save = new Button("Save");
         save.setDefaultButton(true);
         save.setOnAction(e -> {
+            settings.setTheme(theme.getValue());
             settings.setEditorFontSize(fontSize.getValue());
             settings.setWeekStart(weekStart.getValue());
             if (onSaved != null) {
@@ -80,6 +101,7 @@ public class PreferencesDialog extends Stage {
         BorderPane.setMargin(buttons, new Insets(16, 0, 0, 0));
 
         setScene(new Scene(root));
+        settings.theme().applyTo(getScene());
         setResizable(false);
     }
 }

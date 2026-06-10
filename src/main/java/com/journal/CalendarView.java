@@ -29,8 +29,6 @@ import javafx.scene.layout.VBox;
 public class CalendarView extends BorderPane {
 
     private static final DateTimeFormatter HEADER_FORMAT = DateTimeFormatter.ofPattern("MMMM yyyy");
-    private static final String DOT_COLOR = "#1A7F37";
-    private static final String TODAY_BG = "#D6E9FF";
 
     private final JournalDao dao;
     private final Settings settings;
@@ -69,7 +67,7 @@ public class CalendarView extends BorderPane {
             rebuild();
         });
 
-        headerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        headerLabel.getStyleClass().add("month-label");
         headerLabel.setMaxWidth(Double.MAX_VALUE);
         headerLabel.setAlignment(Pos.CENTER);
         HBox.setHgrow(headerLabel, Priority.ALWAYS);
@@ -108,7 +106,7 @@ public class CalendarView extends BorderPane {
         for (int c = 0; c < 7; c++) {
             DayOfWeek day = weekStart.plus(c);
             Label label = new Label(day.getDisplayName(TextStyle.SHORT, Locale.getDefault()));
-            label.setStyle("-fx-font-weight: bold;");
+            label.getStyleClass().add("weekday-label");
             GridPane.setHalignment(label, HPos.CENTER);
             grid.add(label, c, 0);
         }
@@ -138,7 +136,7 @@ public class CalendarView extends BorderPane {
         content.setAlignment(Pos.TOP_CENTER);
         if (hasEntry) {
             Label dot = new Label("●");
-            dot.setStyle("-fx-text-fill: " + DOT_COLOR + "; -fx-font-size: 10px;");
+            dot.getStyleClass().add("entry-dot");
             content.getChildren().add(dot);
         }
 
@@ -147,9 +145,9 @@ public class CalendarView extends BorderPane {
         button.setMaxWidth(Double.MAX_VALUE);
         button.setMaxHeight(Double.MAX_VALUE);
         button.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        button.getStyleClass().add("day-cell");
         if (isToday) {
-            button.setStyle("-fx-background-color: " + TODAY_BG + "; -fx-border-color: " + DOT_COLOR
-                    + "; -fx-border-width: 2;");
+            button.getStyleClass().add("today");
         }
         GridPane.setHgrow(button, Priority.ALWAYS);
         GridPane.setVgrow(button, Priority.ALWAYS);
