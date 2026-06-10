@@ -20,10 +20,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Duration;
+import java.io.File;
 
 /**
  * The "notepad": a modal window for one day's journal entry, with an optional
@@ -85,6 +87,9 @@ public class JournalEditorDialog extends Stage {
 
         previewToggle.selectedProperty().addListener((obs, was, on) -> setPreviewVisible(on));
 
+        Button export = new Button("Export…");
+        export.setOnAction(e -> exportEntry());
+
         Button delete = new Button("Delete");
         delete.setOnAction(e -> confirmDelete());
 
@@ -94,7 +99,7 @@ public class JournalEditorDialog extends Stage {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox bottom = new HBox(12, status, count, spacer, previewToggle, delete, close);
+        HBox bottom = new HBox(12, status, count, spacer, previewToggle, export, delete, close);
         bottom.setAlignment(Pos.CENTER_LEFT);
 
         VBox.setMargin(titleField, new Insets(0, 0, 4, 0));
@@ -171,6 +176,20 @@ public class JournalEditorDialog extends Stage {
                 + "blockquote{border-left:3px solid #888;margin-left:0;padding-left:12px;color:#999;}";
         return "<!DOCTYPE html><html><head><meta charset='utf-8'><style>" + css
                 + "</style></head><body>" + bodyHtml + "</body></html>";
+    }
+
+    private void exportEntry() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export entry as Markdown");
+        chooser.setInitialFileName(MarkdownExport.fileName(date));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Markdown", "*.md"));
+        File file = chooser.showSaveDialog(this);
+        if (file == null) {
+            return;
+        }
+        String title = titleField.getText();
+        MarkdownExport.exportEntry(file.toPath(), date,
+                new Entry(title == null || title.isBlank() ? null : title, textArea.getText()));
     }
 
     private void autosave() {

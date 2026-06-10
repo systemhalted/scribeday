@@ -60,7 +60,7 @@ These unlock most of the roadmap:
 | Organize | Full-text search across all entries ✅ |
 | Organize | Agenda/list view toggle ✅ |
 | Data | Manual backup & restore ✅ |
-| Data | Export to Markdown + PDF |
+| Data | Export to Markdown ✅ + PDF (PDF deferred) |
 | Polish | Preferences screen ✅ (font size, week-start; theme to follow) |
 | Polish | Keyboard shortcuts + first-run welcome |
 

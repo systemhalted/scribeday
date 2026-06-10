@@ -79,11 +79,14 @@ public class JournalApp extends Application {
         MenuItem restore = new MenuItem("Restore…");
         restore.setOnAction(e -> restore(stage));
 
+        MenuItem exportAll = new MenuItem("Export All to Markdown…");
+        exportAll.setOnAction(e -> exportAll(stage));
+
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction(e -> Platform.exit());
 
         Menu file = new Menu("File", null, preferences, new SeparatorMenuItem(),
-                backup, restore, new SeparatorMenuItem(), quit);
+                backup, restore, exportAll, new SeparatorMenuItem(), quit);
 
         MenuItem find = new MenuItem("Find…");
         find.setAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN));
@@ -155,6 +158,22 @@ public class JournalApp extends Application {
                 alert(Alert.AlertType.ERROR, "Restore failed", ex.getMessage());
             }
         });
+    }
+
+    private void exportAll(Stage stage) {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Choose a folder to export Markdown files");
+        File dir = chooser.showDialog(stage);
+        if (dir == null) {
+            return;
+        }
+        try {
+            int n = MarkdownExport.exportAll(dao, dir.toPath());
+            alert(Alert.AlertType.INFORMATION, "Export complete",
+                    "Exported " + n + (n == 1 ? " entry" : " entries") + " to:\n" + dir);
+        } catch (RuntimeException ex) {
+            alert(Alert.AlertType.ERROR, "Export failed", ex.getMessage());
+        }
     }
 
     private void alert(Alert.AlertType type, String header, String message) {
