@@ -56,7 +56,7 @@ These unlock most of the roadmap:
 | Foundation | Stable app data dir + schema migrations |
 | Writing | Autosave + unsaved-changes guard ✅ |
 | Writing | Entry title + word/character count ✅ |
-| Writing | Markdown editing with live preview |
+| Writing | Markdown editing with live preview ✅ |
 | Organize | Full-text search across all entries |
 | Organize | Agenda/list view toggle |
 | Data | Manual backup & restore |

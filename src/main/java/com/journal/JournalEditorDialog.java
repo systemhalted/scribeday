@@ -10,13 +10,16 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -24,9 +27,9 @@ import javafx.util.Duration;
 
 /**
  * The "notepad": a modal window for one day's journal entry, with an optional
- * title and a live word/character count. Changes autosave a short pause after you
- * stop typing, and again when the window closes, so text is never lost. A blank
- * title and content removes the entry (see {@link EntryAutosave}).
+ * title, a live word/character count, and a Markdown preview. Changes autosave a
+ * short pause after you stop typing, and again when the window closes, so text is
+ * never lost. A blank title and content removes the entry (see {@link EntryAutosave}).
  */
 public class JournalEditorDialog extends Stage {
 
@@ -36,15 +39,23 @@ public class JournalEditorDialog extends Stage {
 
     private final JournalDao dao;
     private final LocalDate date;
+    private final boolean dark;
+    private final MarkdownRenderer markdown = new MarkdownRenderer();
+
     private final TextField titleField = new TextField();
     private final TextArea textArea = new TextArea();
     private final Label status = new Label();
     private final Label count = new Label();
+    private final ToggleButton previewToggle = new ToggleButton("Preview");
+    private final SplitPane split = new SplitPane();
+    private final BorderPane root = new BorderPane();
+    private WebView webView;   // created lazily on first preview
     private boolean deleted = false;
 
     public JournalEditorDialog(Window owner, JournalDao dao, Settings settings, LocalDate date) {
         this.dao = dao;
         this.date = date;
+        this.dark = settings.theme() == Theme.DARK;
 
         initOwner(owner);
         initModality(Modality.APPLICATION_MODAL);
@@ -60,14 +71,19 @@ public class JournalEditorDialog extends Stage {
         status.setText(existing == null ? "" : "Saved");
         updateCount();
 
-        // Debounced autosave: restart the timer on each keystroke; save when it settles.
         PauseTransition debounce = new PauseTransition(AUTOSAVE_DELAY);
         debounce.setOnFinished(e -> autosave());
-        titleField.textProperty().addListener((obs, old, val) -> onEdit(debounce));
+        titleField.textProperty().addListener((obs, old, val) -> {
+            onEdit(debounce);
+            renderIfPreviewing();
+        });
         textArea.textProperty().addListener((obs, old, val) -> {
             updateCount();
             onEdit(debounce);
+            renderIfPreviewing();
         });
+
+        previewToggle.selectedProperty().addListener((obs, was, on) -> setPreviewVisible(on));
 
         Button delete = new Button("Delete");
         delete.setOnAction(e -> confirmDelete());
@@ -78,21 +94,18 @@ public class JournalEditorDialog extends Stage {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox bottom = new HBox(12, status, count, spacer, delete, close);
+        HBox bottom = new HBox(12, status, count, spacer, previewToggle, delete, close);
         bottom.setAlignment(Pos.CENTER_LEFT);
 
-        VBox top = new VBox(8, titleField);
         VBox.setMargin(titleField, new Insets(0, 0, 4, 0));
 
-        BorderPane root = new BorderPane();
         root.setPadding(new Insets(12));
-        root.setTop(top);
+        root.setTop(new VBox(8, titleField));
         root.setCenter(textArea);
         root.setBottom(bottom);
         BorderPane.setMargin(textArea, new Insets(4, 0, 0, 0));
         BorderPane.setMargin(bottom, new Insets(10, 0, 0, 0));
 
-        // Flush a final save on close (unless the entry was explicitly deleted).
         setOnHidden(e -> {
             debounce.stop();
             if (!deleted) {
@@ -114,6 +127,52 @@ public class JournalEditorDialog extends Stage {
         count.setText(s.words() + " words · " + s.chars() + " chars");
     }
 
+    private void setPreviewVisible(boolean on) {
+        if (on) {
+            if (webView == null) {
+                webView = new WebView();
+            }
+            renderPreview();
+            split.getItems().setAll(textArea, webView);
+            split.setDividerPositions(0.5);
+            root.setCenter(split);
+            BorderPane.setMargin(split, new Insets(4, 0, 0, 0));
+            if (getWidth() < 880) {
+                setWidth(940);
+            }
+        } else {
+            split.getItems().clear();
+            root.setCenter(textArea);
+            BorderPane.setMargin(textArea, new Insets(4, 0, 0, 0));
+        }
+    }
+
+    private void renderIfPreviewing() {
+        if (previewToggle.isSelected()) {
+            renderPreview();
+        }
+    }
+
+    private void renderPreview() {
+        String title = titleField.getText();
+        String source = (title == null || title.isBlank() ? "" : "# " + title + "\n\n") + textArea.getText();
+        webView.getEngine().loadContent(previewDocument(markdown.toHtml(source)));
+    }
+
+    private String previewDocument(String bodyHtml) {
+        String bg = dark ? "#2b2b2b" : "#ffffff";
+        String fg = dark ? "#e0e0e0" : "#222222";
+        String codeBg = dark ? "#3c3f41" : "#f3f3f3";
+        String css = "body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;"
+                + "padding:14px;color:" + fg + ";background:" + bg + ";}"
+                + "h1,h2,h3{margin-top:0.6em;}"
+                + "code{background:" + codeBg + ";padding:1px 4px;border-radius:3px;}"
+                + "pre{background:" + codeBg + ";padding:10px;border-radius:5px;overflow:auto;}"
+                + "blockquote{border-left:3px solid #888;margin-left:0;padding-left:12px;color:#999;}";
+        return "<!DOCTYPE html><html><head><meta charset='utf-8'><style>" + css
+                + "</style></head><body>" + bodyHtml + "</body></html>";
+    }
+
     private void autosave() {
         EntryAutosave.persist(dao, date, titleField.getText(), textArea.getText());
         boolean empty = titleField.getText().isBlank() && textArea.getText().isBlank();
@@ -128,7 +187,7 @@ public class JournalEditorDialog extends Stage {
         confirm.showAndWait()
                 .filter(b -> b == ButtonType.YES)
                 .ifPresent(b -> {
-                    deleted = true;          // skip the on-close autosave
+                    deleted = true;
                     dao.delete(date);
                     close();
                 });
