@@ -54,7 +54,7 @@ These unlock most of the roadmap:
 |-------|---------|
 | Foundation | JavaFX migration + CSS theming + light/dark toggle ✅ |
 | Foundation | Stable app data dir + schema migrations |
-| Writing | Autosave + unsaved-changes guard |
+| Writing | Autosave + unsaved-changes guard ✅ |
 | Writing | Entry title + word/character count |
 | Writing | Markdown editing with live preview |
 | Organize | Full-text search across all entries |
