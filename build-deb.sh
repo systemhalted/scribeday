@@ -30,7 +30,7 @@ jpackage \
   --vendor "Palak" \
   --input packaging/stage \
   --main-jar calendar-journal.jar \
-  --main-class com.journal.Main \
+  --main-class com.journal.Launcher \
   --icon packaging/icon.png \
   --linux-shortcut \
   --linux-menu-group "Office" \

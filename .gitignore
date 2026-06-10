@@ -1,3 +1,8 @@
 target/
 journal.db
 *.class
+dependency-reduced-pom.xml
+
+# Build artifacts — installers belong in releases, not git
+packaging/dist/
+packaging/stage/
