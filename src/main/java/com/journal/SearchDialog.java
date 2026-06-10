@@ -1,16 +1,13 @@
 package com.journal;
 
-import java.time.format.DateTimeFormatter;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -22,8 +19,6 @@ import javafx.util.Duration;
  * notified so the calendar can refresh.
  */
 public class SearchDialog extends Stage {
-
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("EEE, MMM d, yyyy");
 
     private final JournalDao dao;
     private final Settings settings;
@@ -54,7 +49,7 @@ public class SearchDialog extends Stage {
         });
 
         results.setPlaceholder(new Label("No matching entries"));
-        results.setCellFactory(list -> new HitCell());
+        results.setCellFactory(list -> new EntryListCell());
         results.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2) {
                 openSelected();
@@ -95,28 +90,5 @@ public class SearchDialog extends Stage {
             onEntryChanged.run();
         }
         runSearch();   // reflect any edits/deletes in the results
-    }
-
-    /** Renders a result as a date + title line over a content snippet. */
-    private static class HitCell extends ListCell<SearchHit> {
-        @Override
-        protected void updateItem(SearchHit hit, boolean empty) {
-            super.updateItem(hit, empty);
-            if (empty || hit == null) {
-                setText(null);
-                setGraphic(null);
-                return;
-            }
-            String heading = hit.date().format(DATE_FORMAT);
-            if (hit.title() != null && !hit.title().isBlank()) {
-                heading += " — " + hit.title();
-            }
-            Label headingLabel = new Label(heading);
-            headingLabel.setStyle("-fx-font-weight: bold;");
-            Label snippetLabel = new Label(hit.snippet());
-            snippetLabel.setStyle("-fx-opacity: 0.8;");
-            snippetLabel.setWrapText(true);
-            setGraphic(new VBox(2, headingLabel, snippetLabel));
-        }
     }
 }

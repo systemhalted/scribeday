@@ -365,6 +365,36 @@ public class JournalDao {
         return hits;
     }
 
+    /**
+     * The most recent entries, newest first, for the agenda/list view.
+     *
+     * @param limit maximum number of entries to return
+     * @return each as a {@link SearchHit} whose snippet is a short content preview
+     */
+    public List<SearchHit> recentEntries(int limit) {
+        String sql = """
+                SELECT entry_date, title, substr(content, 1, 140) AS preview
+                FROM entries
+                ORDER BY entry_date DESC
+                LIMIT ?
+                """;
+        List<SearchHit> entries = new ArrayList<>();
+        try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    entries.add(new SearchHit(
+                            LocalDate.parse(rs.getString("entry_date")),
+                            rs.getString("title"),
+                            rs.getString("preview")));
+                }
+            }
+        } catch (SQLException e) {
+            throw new JournalException("Failed to list recent entries", e);
+        }
+        return entries;
+    }
+
     /** Unchecked wrapper so UI code can surface DB errors without checked-exception noise. */
     public static class JournalException extends RuntimeException {
         public JournalException(String message, Throwable cause) {

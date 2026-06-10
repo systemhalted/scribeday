@@ -163,6 +163,35 @@ class JournalDaoTest {
     }
 
     @Test
+    void recentEntriesAreReturnedMostRecentFirstWithTitle() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2026, 6, 1), "first", "one");
+        dao.saveEntry(LocalDate.of(2026, 6, 10), "latest", "two");
+        dao.saveEntry(LocalDate.of(2026, 5, 20), "oldest", "three");
+        List<SearchHit> recent = dao.recentEntries(10);
+        assertEquals(
+                List.of(LocalDate.of(2026, 6, 10), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 5, 20)),
+                recent.stream().map(SearchHit::date).toList());
+        assertEquals("latest", recent.get(0).title());
+    }
+
+    @Test
+    void recentEntriesRespectsLimit() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2026, 6, 1), "a", "one");
+        dao.saveEntry(LocalDate.of(2026, 6, 2), "b", "two");
+        dao.saveEntry(LocalDate.of(2026, 6, 3), "c", "three");
+        List<SearchHit> recent = dao.recentEntries(2);
+        assertEquals(2, recent.size());
+        assertEquals(LocalDate.of(2026, 6, 3), recent.get(0).date());
+    }
+
+    @Test
+    void recentEntriesEmptyWhenNoEntries() {
+        assertTrue(freshDao().recentEntries(10).isEmpty());
+    }
+
+    @Test
     void initIsIdempotent() {
         JournalDao dao = freshDao();
         dao.save(LocalDate.of(2026, 6, 9), "kept across re-init");
