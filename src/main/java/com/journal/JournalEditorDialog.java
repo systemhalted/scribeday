@@ -25,7 +25,7 @@ public class JournalEditorDialog extends Stage {
     private static final DateTimeFormatter TITLE_FORMAT =
             DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy");
 
-    public JournalEditorDialog(Window owner, JournalDao dao, LocalDate date) {
+    public JournalEditorDialog(Window owner, JournalDao dao, Settings settings, LocalDate date) {
         initOwner(owner);
         initModality(Modality.APPLICATION_MODAL);
         setTitle("Journal — " + date.format(TITLE_FORMAT));
@@ -34,7 +34,7 @@ public class JournalEditorDialog extends Stage {
 
         TextArea textArea = new TextArea(existing == null ? "" : existing);
         textArea.setWrapText(true);
-        textArea.setStyle("-fx-font-family: monospace; -fx-font-size: 14px;");
+        textArea.setStyle("-fx-font-family: monospace; -fx-font-size: " + settings.editorFontSize() + "px;");
         BorderPane.setMargin(textArea, new Insets(0, 0, 10, 0));
 
         Button saveButton = new Button("Save");

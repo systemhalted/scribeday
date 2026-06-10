@@ -36,7 +36,10 @@ These unlock most of the roadmap:
   `tags`, `entry_tags`, and an FTS5 `entries_fts` table (trigger-synced) for search.
   `init()` creates v2 fresh or migrates v1 in place; legacy rows preserved. Covered by
   JUnit tests (`JournalDaoTest`, 9 tests). The one-entry-per-day API is unchanged.
-- **Settings store + Preferences screen** — `settings(key, value)` plus a Preferences dialog.
+- **Settings store + Preferences screen** ✅ — `SettingsDao` (`settings(key, value)`,
+  typed get/set, tested) with a `Settings` facade. `PreferencesDialog` (File → Preferences…)
+  edits editor font size and week-start; both persist and apply live (editor font, calendar
+  layout). Menu bar added to the main window.
 - **Stable app data directory** ✅ — `AppPaths` stores `journal.db` under
   `~/.local/share/CalendarJournal/` (platform-appropriate) and migrates the legacy
   `~/journal.db` on first run, so data survives reinstalls.
@@ -57,7 +60,7 @@ These unlock most of the roadmap:
 | Organize | Agenda/list view toggle |
 | Data | Manual backup & restore |
 | Data | Export to Markdown + PDF |
-| Polish | Preferences screen |
+| Polish | Preferences screen ✅ (font size, week-start; theme to follow) |
 | Polish | Keyboard shortcuts + first-run welcome |
 
 **Build order:** foundations → writing → organize → data → polish.
