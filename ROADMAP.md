@@ -59,7 +59,7 @@ These unlock most of the roadmap:
 | Writing | Markdown editing with live preview ✅ |
 | Organize | Full-text search across all entries ✅ |
 | Organize | Agenda/list view toggle ✅ |
-| Data | Manual backup & restore |
+| Data | Manual backup & restore ✅ |
 | Data | Export to Markdown + PDF |
 | Polish | Preferences screen ✅ (font size, week-start; theme to follow) |
 | Polish | Keyboard shortcuts + first-run welcome |

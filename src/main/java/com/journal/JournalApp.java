@@ -1,9 +1,14 @@
 package com.journal;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -14,6 +19,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 /**
@@ -24,6 +31,7 @@ public class JournalApp extends Application {
 
     private JournalDao dao;
     private Settings settings;
+    private Path dbPath;
     private Scene scene;
     private BorderPane root;
     private CalendarView calendarView;
@@ -31,10 +39,10 @@ public class JournalApp extends Application {
 
     @Override
     public void init() {
-        String dbFile = AppPaths.databaseFile().toString();
-        dao = new JournalDao(dbFile);
+        dbPath = AppPaths.databaseFile();
+        dao = new JournalDao(dbPath.toString());
         dao.init();
-        SettingsDao settingsDao = new SettingsDao(dbFile);
+        SettingsDao settingsDao = new SettingsDao(dbPath.toString());
         settingsDao.init();
         settings = new Settings(settingsDao);
     }
@@ -65,10 +73,17 @@ public class JournalApp extends Application {
                     refreshViews();
                 }).showAndWait());
 
+        MenuItem backup = new MenuItem("Back Up…");
+        backup.setOnAction(e -> backUp(stage));
+
+        MenuItem restore = new MenuItem("Restore…");
+        restore.setOnAction(e -> restore(stage));
+
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction(e -> Platform.exit());
 
-        Menu file = new Menu("File", null, preferences, new SeparatorMenuItem(), quit);
+        Menu file = new Menu("File", null, preferences, new SeparatorMenuItem(),
+                backup, restore, new SeparatorMenuItem(), quit);
 
         MenuItem find = new MenuItem("Find…");
         find.setAccelerator(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN));
@@ -94,6 +109,58 @@ public class JournalApp extends Application {
 
         Menu view = new Menu("View", null, calendarItem, agendaItem);
         return new MenuBar(file, edit, view);
+    }
+
+    private void backUp(Stage stage) {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Choose a folder for the backup");
+        File dir = chooser.showDialog(stage);
+        if (dir == null) {
+            return;
+        }
+        try {
+            Path saved = BackupService.backup(dbPath, dir.toPath(), LocalDateTime.now());
+            alert(Alert.AlertType.INFORMATION, "Backup complete", "Saved to:\n" + saved);
+        } catch (RuntimeException ex) {
+            alert(Alert.AlertType.ERROR, "Backup failed", ex.getMessage());
+        }
+    }
+
+    private void restore(Stage stage) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choose a backup to restore");
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Journal database", "*.db"));
+        File file = chooser.showOpenDialog(stage);
+        if (file == null) {
+            return;
+        }
+        if (!BackupService.isJournalDatabase(file.toPath())) {
+            alert(Alert.AlertType.ERROR, "Cannot restore",
+                    "That file is not a Calendar Journal backup.");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.WARNING,
+                "Restoring will replace your current journal with this backup. Continue?",
+                ButtonType.YES, ButtonType.NO);
+        confirm.setHeaderText(null);
+        confirm.initOwner(stage);
+        confirm.showAndWait().filter(b -> b == ButtonType.YES).ifPresent(b -> {
+            try {
+                BackupService.restore(file.toPath(), dbPath);
+                refreshViews();
+                alert(Alert.AlertType.INFORMATION, "Restore complete",
+                        "Your journal has been restored from the backup.");
+            } catch (RuntimeException ex) {
+                alert(Alert.AlertType.ERROR, "Restore failed", ex.getMessage());
+            }
+        });
+    }
+
+    private void alert(Alert.AlertType type, String header, String message) {
+        Alert alert = new Alert(type, message, ButtonType.OK);
+        alert.setHeaderText(header);
+        alert.showAndWait();
     }
 
     /** Refresh whichever views exist after an edit elsewhere. */
