@@ -47,17 +47,29 @@ java -jar target/calendar-journal.jar
 mvn test
 ```
 
-## Build a desktop installer (.deb)
+## Build a desktop installer
 
-Builds a native Debian package with a bundled Java + JavaFX runtime:
+Each installer bundles its own Java + JavaFX runtime. `jpackage` only builds for
+the OS it runs on, so build each on its native platform:
 
 ```bash
-./build-deb.sh
-sudo apt install ./packaging/dist/calendar-journal_1.0.0_amd64.deb
+./build-deb.sh          # Linux  → packaging/dist/*.deb   (needs fakeroot)
+./build-mac.sh          # macOS  → packaging/dist/*.dmg
+.\build-windows.ps1     # Windows → packaging/dist/*.msi  (needs the WiX Toolset)
 ```
 
-Then launch **Calendar Journal** from your app menu. Uninstall with
-`sudo apt remove calendar-journal`.
+Install the Debian package and launch **Calendar Journal** from your app menu:
+
+```bash
+sudo apt install ./packaging/dist/calendar-journal_1.0.0_amd64.deb
+# uninstall: sudo apt remove calendar-journal
+```
+
+### Releases
+
+Pushing a `v*` tag runs `.github/workflows/release.yml`, which builds the `.deb`,
+`.msi`, and `.dmg` on Linux/Windows/macOS runners and attaches them to the
+GitHub Release automatically.
 
 ## Where your data lives
 

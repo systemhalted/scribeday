@@ -1,0 +1,96 @@
+name: Release installers
+
+# Builds native installers on each OS and publishes them to the GitHub Release.
+# jpackage can only build for the host OS, so each installer is built on its own
+# runner. Triggered by pushing a v* tag (or manually via the Actions tab).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build and release (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.type }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            type: deb
+          - os: windows-latest
+            type: msi
+          - os: macos-latest
+            type: dmg
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot binutils
+
+      - name: Install WiX (Windows .msi backend)
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --no-progress -y
+
+      - name: Build installer (Linux)
+        if: runner.os == 'Linux'
+        run: bash build-deb.sh
+
+      - name: Build installer (macOS)
+        if: runner.os == 'macOS'
+        run: bash build-mac.sh
+
+      - name: Build installer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\build-windows.ps1
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.type }}
+          path: packaging/dist/*.${{ matrix.type }}
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Calendar Journal ${{ github.event.inputs.tag || github.ref_name }}
+          files: dist/*
+          fail_on_unmatched_files: true
+          body: |
+            A polished JavaFX desktop journaling app — calendar + agenda views, autosave
+            with Markdown preview, full-text search, theming, backup/restore, and Markdown export.
+
+            ## Installers
+            - **Linux (Debian/Ubuntu):** `calendar-journal_1.0.0_amd64.deb` — `sudo apt install ./calendar-journal_1.0.0_amd64.deb`
+            - **Windows:** `Calendar Journal-1.0.0.msi` (unsigned — SmartScreen may warn)
+            - **macOS:** `Calendar Journal-1.0.0.dmg` (unsigned — right-click → Open on first launch)
+
+            Each installer bundles its own Java + JavaFX runtime; no separate Java install is needed.
