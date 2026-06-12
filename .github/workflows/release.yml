@@ -2,7 +2,9 @@ name: Release installers
 
 # Builds native installers on each OS and publishes them to the GitHub Release.
 # jpackage can only build for the host OS, so each installer is built on its own
-# runner. Triggered by pushing a v* tag (or manually via the Actions tab).
+# runner. The macOS Intel runner is sometimes scarce, so it is kept off the
+# release's critical path: the three reliable installers + checksums publish
+# promptly, and the Intel .dmg attaches itself afterward only if it builds.
 on:
   push:
     tags: ['v*']
@@ -19,63 +21,66 @@ jobs:
   build:
     name: Build ${{ matrix.type }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            label: linux-x64
-            type: deb
-          - os: windows-latest
-            label: windows-x64
-            type: msi
-          - os: macos-latest
-            label: macos-arm64
-            type: dmg
-          - os: macos-13
-            label: macos-intel
-            type: dmg
-            intel: true
+          - { os: ubuntu-latest,  label: linux-x64,   type: deb }
+          - { os: windows-latest, label: windows-x64, type: msi }
+          - { os: macos-latest,   label: macos-arm64, type: dmg }
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.tag || github.ref }}
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-
       - name: Install Linux packaging tools
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y fakeroot binutils
-
       - name: Install WiX (Windows .msi backend)
         if: runner.os == 'Windows'
         run: choco install wixtoolset --no-progress -y
-
       - name: Build installer (Linux)
         if: runner.os == 'Linux'
         run: bash build-deb.sh
-
       - name: Build installer (macOS)
         if: runner.os == 'macOS'
-        run: |
-          bash build-mac.sh
-          if [ "${{ matrix.intel }}" = "true" ]; then
-            for f in packaging/dist/*.dmg; do mv "$f" "${f%.dmg}-Intel.dmg"; done
-          fi
-
+        run: bash build-mac.sh
       - name: Build installer (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: .\build-windows.ps1
-
-      - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: installer-${{ matrix.label }}
           path: packaging/dist/*.${{ matrix.type }}
+          if-no-files-found: error
+
+  # Best-effort Intel macOS build. Not a dependency of `release`, so a queued or
+  # unavailable Intel runner can never stall the release.
+  macos-intel:
+    name: Build dmg (macos-13, Intel)
+    runs-on: macos-13
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build Intel .dmg
+        run: |
+          bash build-mac.sh
+          for f in packaging/dist/*.dmg; do mv "$f" "${f%.dmg}-Intel.dmg"; done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-macos-intel
+          path: packaging/dist/*.dmg
           if-no-files-found: error
 
   release:
@@ -85,13 +90,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
+          pattern: installer-*
           path: dist
           merge-multiple: true
-
       - name: Generate SHA-256 checksums
         working-directory: dist
         run: sha256sum * | tee SHA256SUMS.txt
-
       - name: Publish to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -107,7 +111,7 @@ jobs:
             - **Linux (Debian/Ubuntu):** `calendar-journal_1.0.0_amd64.deb` — `sudo apt install ./calendar-journal_1.0.0_amd64.deb`
             - **Windows:** `Calendar Journal-1.0.0.msi` (unsigned — SmartScreen may warn)
             - **macOS (Apple Silicon):** `Calendar Journal-1.0.0.dmg` (unsigned — right-click → Open on first launch)
-            - **macOS (Intel):** `Calendar Journal-1.0.0-Intel.dmg` (unsigned — right-click → Open on first launch)
+            - **macOS (Intel):** `Calendar Journal-1.0.0-Intel.dmg` — attached when the Intel build is available
 
             Each installer bundles its own Java + JavaFX runtime; no separate Java install is needed.
 
@@ -117,3 +121,26 @@ jobs:
             sha256sum -c SHA256SUMS.txt        # Linux
             shasum -a 256 -c SHA256SUMS.txt    # macOS
             ```
+
+  # Adds the Intel .dmg (and regenerates the checksums to include it) once the
+  # best-effort Intel build succeeds. Skipped if that runner never produced one.
+  attach-intel:
+    name: Attach Intel .dmg
+    needs: [build, macos-intel]
+    if: ${{ needs.macos-intel.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          path: dist
+          merge-multiple: true
+      - name: Generate SHA-256 checksums (including Intel)
+        working-directory: dist
+        run: sha256sum * | tee SHA256SUMS.txt
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: dist/*
+          fail_on_unmatched_files: true
