@@ -14,6 +14,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -149,6 +150,9 @@ public class CalendarView extends BorderPane {
         }
 
         Button button = new Button();
+        if (mood != null) {
+            button.setTooltip(new Tooltip("Mood: " + mood.displayName()));
+        }
         button.setGraphic(content);
         button.setMaxWidth(Double.MAX_VALUE);
         button.setMaxHeight(Double.MAX_VALUE);

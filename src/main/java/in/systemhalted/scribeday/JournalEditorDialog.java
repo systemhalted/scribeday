@@ -119,7 +119,7 @@ public class JournalEditorDialog extends Stage {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox bottom = new HBox(12, status, count, moodBox, spacer, template, previewToggle, export, delete, close);
+        HBox bottom = new HBox(8, status, count, moodBox, spacer, template, previewToggle, export, delete, close);
         bottom.setAlignment(Pos.CENTER_LEFT);
 
         VBox.setMargin(titleField, new Insets(0, 0, 4, 0));
@@ -140,7 +140,9 @@ public class JournalEditorDialog extends Stage {
             }
         });
 
-        setScene(new Scene(root, 580, 480));
+        setScene(new Scene(root, 780, 520));
+        setMinWidth(700);
+        setMinHeight(420);
         settings.theme().applyTo(getScene());
     }
 

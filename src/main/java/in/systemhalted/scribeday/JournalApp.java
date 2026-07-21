@@ -68,12 +68,12 @@ public class JournalApp extends Application {
         root.setBottom(buildStatusBar());
         updateStats();
 
-        scene = new Scene(root, 580, 560);
+        scene = new Scene(root, 640, 620);
         settings.theme().applyTo(scene);
         stage.setTitle("ScribeDay");
         stage.setScene(scene);
-        stage.setMinWidth(460);
-        stage.setMinHeight(460);
+        stage.setMinWidth(520);
+        stage.setMinHeight(520);
         stage.show();
 
         maybeShowWelcome(stage);

@@ -13,6 +13,9 @@ polished, shippable product (see [ROADMAP.md](ROADMAP.md)).
 - Month calendar with previous/next navigation; today is highlighted.
 - Click a day to write; entries autosave, with title, word count, and live Markdown preview.
 - Mood per entry, shown color-coded on the calendar; templates for a quick start.
+  Moods run traffic-light style from green to red — Great (deep green), Good
+  (light green), OK (amber), Low (orange), Bad (red); hover a calendar day or a
+  mood button for the name.
 - Writing streaks and entry count in a status bar; "On this day" resurfaces past years.
 - Full-text search (Ctrl+F) and an agenda list view.
 - Backup & restore, automatic weekly backups, and Markdown export.
