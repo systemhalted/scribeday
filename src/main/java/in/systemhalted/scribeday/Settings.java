@@ -1,6 +1,8 @@
 package in.systemhalted.scribeday;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 
 /**
  * Typed, app-specific view over the generic {@link SettingsDao} key/value store.
@@ -15,6 +17,8 @@ public class Settings {
     public static final String AUTO_BACKUP_ENABLED = "backup.auto.enabled";
     public static final String AUTO_BACKUP_INTERVAL_DAYS = "backup.auto.interval.days";
     public static final String AUTO_BACKUP_KEEP = "backup.auto.keep";
+    public static final String REMINDER_ENABLED = "reminder.enabled";
+    public static final String REMINDER_TIME = "reminder.time";
 
     public static final int DEFAULT_EDITOR_FONT_SIZE = 14;
     public static final DayOfWeek DEFAULT_WEEK_START = DayOfWeek.SUNDAY;
@@ -22,6 +26,7 @@ public class Settings {
     public static final boolean DEFAULT_AUTO_BACKUP_ENABLED = true;
     public static final int DEFAULT_AUTO_BACKUP_INTERVAL_DAYS = 7;
     public static final int DEFAULT_AUTO_BACKUP_KEEP = 10;
+    public static final LocalTime DEFAULT_REMINDER_TIME = LocalTime.of(20, 0);
 
     private final SettingsDao dao;
 
@@ -80,6 +85,27 @@ public class Settings {
 
     public void setAutoBackupIntervalDays(int days) {
         dao.setInt(AUTO_BACKUP_INTERVAL_DAYS, days);
+    }
+
+    public boolean reminderEnabled() {
+        return dao.getBoolean(REMINDER_ENABLED, false);
+    }
+
+    public void setReminderEnabled(boolean enabled) {
+        dao.setBoolean(REMINDER_ENABLED, enabled);
+    }
+
+    public LocalTime reminderTime() {
+        String stored = dao.get(REMINDER_TIME, DEFAULT_REMINDER_TIME.toString());
+        try {
+            return LocalTime.parse(stored);
+        } catch (DateTimeParseException e) {
+            return DEFAULT_REMINDER_TIME;
+        }
+    }
+
+    public void setReminderTime(LocalTime time) {
+        dao.set(REMINDER_TIME, time.toString());
     }
 
     public int autoBackupKeep() {

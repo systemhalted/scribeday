@@ -77,6 +77,29 @@ class SettingsTest {
     }
 
     @Test
+    void reminderDefaultsToOffAtEight() {
+        Settings settings = new Settings(dao());
+        assertEquals(false, settings.reminderEnabled());
+        assertEquals(java.time.LocalTime.of(20, 0), settings.reminderTime());
+    }
+
+    @Test
+    void reminderSettingsRoundTrip() {
+        Settings settings = new Settings(dao());
+        settings.setReminderEnabled(true);
+        settings.setReminderTime(java.time.LocalTime.of(7, 30));
+        assertEquals(true, settings.reminderEnabled());
+        assertEquals(java.time.LocalTime.of(7, 30), settings.reminderTime());
+    }
+
+    @Test
+    void reminderTimeFallsBackWhenStoredValueIsInvalid() {
+        SettingsDao raw = dao();
+        raw.set(Settings.REMINDER_TIME, "half past nine");
+        assertEquals(java.time.LocalTime.of(20, 0), new Settings(raw).reminderTime());
+    }
+
+    @Test
     void autoBackupSettingsRoundTrip() {
         Settings settings = new Settings(dao());
         settings.setAutoBackupEnabled(false);

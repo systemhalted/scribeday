@@ -41,6 +41,8 @@ public class JournalApp extends Application {
     private CalendarView calendarView;
     private AgendaView agendaView;
     private final Label statsLabel = new Label();
+    private ReminderScheduler reminders;
+    private Stage primaryStage;
 
     @Override
     public void init() {
@@ -75,6 +77,34 @@ public class JournalApp extends Application {
 
         maybeShowWelcome(stage);
         runAutoBackup();
+
+        primaryStage = stage;
+        reminders = new ReminderScheduler(settings, this::remindToJournal);
+        reminders.reschedule();
+    }
+
+    @Override
+    public void stop() {
+        if (reminders != null) {
+            reminders.stop();
+        }
+    }
+
+    /** Daily-reminder callback: nudge only when today has no entry yet. */
+    private void remindToJournal() {
+        if (dao.loadEntry(LocalDate.now()) != null) {
+            return;
+        }
+        primaryStage.toFront();
+        Alert prompt = new Alert(Alert.AlertType.CONFIRMATION,
+                "Time to journal. Write today's entry now?",
+                ButtonType.YES, ButtonType.NO);
+        prompt.setHeaderText(null);
+        prompt.setTitle("ScribeDay reminder");
+        prompt.initOwner(primaryStage);
+        prompt.showAndWait()
+                .filter(b -> b == ButtonType.YES)
+                .ifPresent(b -> openEntry(primaryStage, LocalDate.now()));
     }
 
     /** Take a scheduled backup if one is due, off the FX thread; only failures are surfaced. */
@@ -108,6 +138,7 @@ public class JournalApp extends Application {
                 new PreferencesDialog(stage, settings, () -> {
                     settings.theme().applyTo(scene);
                     refreshViews();
+                    reminders.reschedule();
                 }).showAndWait());
 
         MenuItem backup = new MenuItem("Back Up…");

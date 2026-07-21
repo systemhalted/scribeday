@@ -1,6 +1,8 @@
 package in.systemhalted.scribeday;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import javafx.geometry.Insets;
@@ -82,6 +84,33 @@ public class PreferencesDialog extends Stage {
         backupKeep.setPrefWidth(80);
         backupKeep.disableProperty().bind(autoBackup.selectedProperty().not());
 
+        CheckBox reminder = new CheckBox("Remind me to journal daily");
+        reminder.setSelected(settings.reminderEnabled());
+
+        ComboBox<LocalTime> reminderTime = new ComboBox<>();
+        for (int halfHour = 0; halfHour < 48; halfHour++) {
+            reminderTime.getItems().add(LocalTime.of(halfHour / 2, (halfHour % 2) * 30));
+        }
+        LocalTime storedTime = settings.reminderTime();
+        if (!reminderTime.getItems().contains(storedTime)) {
+            reminderTime.getItems().add(storedTime);   // off-grid stored value stays selectable
+        }
+        reminderTime.setValue(storedTime);
+        reminderTime.disableProperty().bind(reminder.selectedProperty().not());
+        reminderTime.setConverter(new StringConverter<>() {
+            private final DateTimeFormatter format = DateTimeFormatter.ofPattern("h:mm a");
+
+            @Override
+            public String toString(LocalTime time) {
+                return time == null ? "" : format.format(time);
+            }
+
+            @Override
+            public LocalTime fromString(String s) {
+                return LocalTime.parse(s, format);
+            }
+        });
+
         GridPane form = new GridPane();
         form.setHgap(12);
         form.setVgap(12);
@@ -91,6 +120,8 @@ public class PreferencesDialog extends Stage {
         form.add(autoBackup, 0, 3, 2, 1);
         form.addRow(4, new Label("Back up every (days):"), backupInterval);
         form.addRow(5, new Label("Backups to keep:"), backupKeep);
+        form.add(reminder, 0, 6, 2, 1);
+        form.addRow(7, new Label("Reminder time:"), reminderTime);
 
         Button save = new Button("Save");
         save.setDefaultButton(true);
@@ -101,6 +132,8 @@ public class PreferencesDialog extends Stage {
             settings.setAutoBackupEnabled(autoBackup.isSelected());
             settings.setAutoBackupIntervalDays(backupInterval.getValue());
             settings.setAutoBackupKeep(backupKeep.getValue());
+            settings.setReminderEnabled(reminder.isSelected());
+            settings.setReminderTime(reminderTime.getValue());
             if (onSaved != null) {
                 onSaved.run();
             }
