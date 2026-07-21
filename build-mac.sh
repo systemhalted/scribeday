@@ -9,7 +9,7 @@
 #
 set -euo pipefail
 
-VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+VERSION=$(sed -n '/<version>/ { s/.*<version>\([^<]*\)<\/version>.*/\1/; p; q; }' pom.xml)
 cd "$(dirname "$0")"
 
 # Pick the JavaFX native classifier for this Mac's architecture.
