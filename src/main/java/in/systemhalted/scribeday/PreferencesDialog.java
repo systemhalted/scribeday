@@ -111,6 +111,9 @@ public class PreferencesDialog extends Stage {
             }
         });
 
+        CheckBox tray = new CheckBox("Close to system tray (needs restart)");
+        tray.setSelected(settings.trayEnabled());
+
         GridPane form = new GridPane();
         form.setHgap(12);
         form.setVgap(12);
@@ -122,6 +125,9 @@ public class PreferencesDialog extends Stage {
         form.addRow(5, new Label("Backups to keep:"), backupKeep);
         form.add(reminder, 0, 6, 2, 1);
         form.addRow(7, new Label("Reminder time:"), reminderTime);
+        if (TrayIntegration.isAvailable()) {
+            form.add(tray, 0, 8, 2, 1);
+        }
 
         Button save = new Button("Save");
         save.setDefaultButton(true);
@@ -134,6 +140,9 @@ public class PreferencesDialog extends Stage {
             settings.setAutoBackupKeep(backupKeep.getValue());
             settings.setReminderEnabled(reminder.isSelected());
             settings.setReminderTime(reminderTime.getValue());
+            if (TrayIntegration.isAvailable()) {
+                settings.setTrayEnabled(tray.isSelected());
+            }
             if (onSaved != null) {
                 onSaved.run();
             }

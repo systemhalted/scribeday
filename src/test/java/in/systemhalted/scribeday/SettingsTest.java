@@ -100,6 +100,14 @@ class SettingsTest {
     }
 
     @Test
+    void trayDefaultsToOffAndRoundTrips() {
+        Settings settings = new Settings(dao());
+        assertEquals(false, settings.trayEnabled());
+        settings.setTrayEnabled(true);
+        assertEquals(true, settings.trayEnabled());
+    }
+
+    @Test
     void autoBackupSettingsRoundTrip() {
         Settings settings = new Settings(dao());
         settings.setAutoBackupEnabled(false);

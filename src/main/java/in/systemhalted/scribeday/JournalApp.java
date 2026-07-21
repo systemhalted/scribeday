@@ -42,6 +42,7 @@ public class JournalApp extends Application {
     private AgendaView agendaView;
     private final Label statsLabel = new Label();
     private ReminderScheduler reminders;
+    private TrayIntegration tray;
     private Stage primaryStage;
 
     @Override
@@ -81,6 +82,7 @@ public class JournalApp extends Application {
         primaryStage = stage;
         reminders = new ReminderScheduler(settings, this::remindToJournal);
         reminders.reschedule();
+        maybeInstallTray(stage);
     }
 
     @Override
@@ -88,6 +90,36 @@ public class JournalApp extends Application {
         if (reminders != null) {
             reminders.stop();
         }
+        if (tray != null) {
+            tray.uninstall();
+        }
+    }
+
+    /**
+     * When enabled and supported, closing the window hides it to the system
+     * tray instead of quitting; the tray menu reopens or quits the app.
+     */
+    private void maybeInstallTray(Stage stage) {
+        if (!settings.trayEnabled() || !TrayIntegration.isAvailable()) {
+            return;
+        }
+        tray = new TrayIntegration();
+        tray.install(
+                () -> {
+                    stage.show();
+                    stage.toFront();
+                },
+                () -> {
+                    stage.show();
+                    stage.toFront();
+                    openEntry(stage, LocalDate.now());
+                },
+                Platform::exit);
+        Platform.setImplicitExit(false);
+        stage.setOnCloseRequest(e -> {
+            e.consume();
+            stage.hide();
+        });
     }
 
     /** Daily-reminder callback: nudge only when today has no entry yet. */
@@ -95,6 +127,11 @@ public class JournalApp extends Application {
         if (dao.loadEntry(LocalDate.now()) != null) {
             return;
         }
+        if (tray != null && !primaryStage.isShowing()
+                && tray.notify("ScribeDay", "Time to journal — today's entry is still empty.")) {
+            return;   // a tray balloon is nudge enough while the window is hidden
+        }
+        primaryStage.show();
         primaryStage.toFront();
         Alert prompt = new Alert(Alert.AlertType.CONFIRMATION,
                 "Time to journal. Write today's entry now?",

@@ -19,6 +19,7 @@ public class Settings {
     public static final String AUTO_BACKUP_KEEP = "backup.auto.keep";
     public static final String REMINDER_ENABLED = "reminder.enabled";
     public static final String REMINDER_TIME = "reminder.time";
+    public static final String TRAY_ENABLED = "tray.enabled";
 
     public static final int DEFAULT_EDITOR_FONT_SIZE = 14;
     public static final DayOfWeek DEFAULT_WEEK_START = DayOfWeek.SUNDAY;
@@ -106,6 +107,14 @@ public class Settings {
 
     public void setReminderTime(LocalTime time) {
         dao.set(REMINDER_TIME, time.toString());
+    }
+
+    public boolean trayEnabled() {
+        return dao.getBoolean(TRAY_ENABLED, false);
+    }
+
+    public void setTrayEnabled(boolean enabled) {
+        dao.setBoolean(TRAY_ENABLED, enabled);
     }
 
     public int autoBackupKeep() {
