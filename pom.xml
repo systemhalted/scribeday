@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.journal</groupId>
-    <artifactId>calendar-journal</artifactId>
+    <groupId>in.systemhalted.scribeday</groupId>
+    <artifactId>scribeday</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>Calendar Journal</name>
+    <name>ScribeDay</name>
     <description>Java desktop calendar that opens a notepad-style editor per day, storing journal entries in SQLite.</description>
 
     <properties>
@@ -18,7 +18,7 @@
         <javafx.version>21.0.5</javafx.version>
         <!-- Native platform for the bundled JavaFX libs. Override with -Djavafx.platform=win|mac when cross-building. -->
         <javafx.platform>linux</javafx.platform>
-        <main.class>com.journal.Launcher</main.class>
+        <main.class>in.systemhalted.scribeday.Launcher</main.class>
     </properties>
 
     <dependencies>
@@ -76,7 +76,7 @@
     </dependencies>
 
     <build>
-        <finalName>calendar-journal</finalName>
+        <finalName>scribeday</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -96,11 +96,11 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.journal.JournalApp</mainClass>
+                    <mainClass>in.systemhalted.scribeday.JournalApp</mainClass>
                 </configuration>
             </plugin>
 
-            <!-- Build a runnable fat jar: mvn package && java -jar target/calendar-journal.jar -->
+            <!-- Build a runnable fat jar: mvn package && java -jar target/scribeday.jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

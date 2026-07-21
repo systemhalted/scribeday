@@ -1,4 +1,4 @@
-# Calendar Journal — Product Roadmap
+# ScribeDay — Product Roadmap
 
 A polished personal journaling app: a calendar where clicking a day opens an editor
 to write and save an entry. Local-first, no cloud — your journal stays on your machine.
@@ -42,7 +42,7 @@ These unlock most of the roadmap:
   edits editor font size and week-start; both persist and apply live (editor font, calendar
   layout). Menu bar added to the main window.
 - **Stable app data directory** ✅ — `AppPaths` stores `journal.db` under
-  `~/.local/share/CalendarJournal/` (platform-appropriate) and migrates the legacy
+  `~/.local/share/ScribeDay/` (platform-appropriate) and migrates the legacy
   `~/journal.db` on first run, so data survives reinstalls.
 - **Packaging update** — `jpackage` bundles JavaFX modules via `jlink`; generalize `build-deb.sh`.
 

@@ -100,7 +100,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          name: Calendar Journal ${{ github.event.inputs.tag || github.ref_name }}
+          name: ScribeDay ${{ github.event.inputs.tag || github.ref_name }}
           files: dist/*
           fail_on_unmatched_files: true
           body: |
@@ -108,10 +108,10 @@ jobs:
             with Markdown preview, full-text search, theming, backup/restore, and Markdown export.
 
             ## Installers
-            - **Linux (Debian/Ubuntu):** `calendar-journal_1.0.0_amd64.deb` — `sudo apt install ./calendar-journal_1.0.0_amd64.deb`
-            - **Windows:** `Calendar Journal-1.0.0.msi` (unsigned — SmartScreen may warn)
-            - **macOS (Apple Silicon):** `Calendar Journal-1.0.0.dmg` (unsigned — right-click → Open on first launch)
-            - **macOS (Intel):** `Calendar Journal-1.0.0-Intel.dmg` — attached when the Intel build is available
+            - **Linux (Debian/Ubuntu):** `scribeday_1.0.0_amd64.deb` — `sudo apt install ./scribeday_1.0.0_amd64.deb`
+            - **Windows:** `ScribeDay-1.0.0.msi` (unsigned — SmartScreen may warn)
+            - **macOS (Apple Silicon):** `ScribeDay-1.0.0.dmg` (unsigned — right-click → Open on first launch)
+            - **macOS (Intel):** `ScribeDay-1.0.0-Intel.dmg` — attached when the Intel build is available
 
             Each installer bundles its own Java + JavaFX runtime; no separate Java install is needed.
 

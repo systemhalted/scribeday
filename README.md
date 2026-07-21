@@ -1,4 +1,4 @@
-# Calendar Journal
+# ScribeDay
 
 A recreation of a college-era fun project: a desktop calendar where clicking a day
 opens a notepad-style editor to write and save a journal entry. Entries live in a
@@ -38,7 +38,7 @@ Or build and run the packaged jar (what the installed app runs):
 
 ```bash
 mvn package
-java -jar target/calendar-journal.jar
+java -jar target/scribeday.jar
 ```
 
 ## Test
@@ -58,11 +58,11 @@ the OS it runs on, so build each on its native platform:
 .\build-windows.ps1     # Windows → packaging/dist/*.msi  (needs the WiX Toolset)
 ```
 
-Install the Debian package and launch **Calendar Journal** from your app menu:
+Install the Debian package and launch **ScribeDay** from your app menu:
 
 ```bash
-sudo apt install ./packaging/dist/calendar-journal_1.0.0_amd64.deb
-# uninstall: sudo apt remove calendar-journal
+sudo apt install ./packaging/dist/scribeday_1.0.0_amd64.deb
+# uninstall: sudo apt remove scribeday
 ```
 
 ### Releases
@@ -78,23 +78,23 @@ The journal database is stored in a per-user data directory (created on first ru
 
 | OS | Location |
 |----|----------|
-| Linux | `~/.local/share/CalendarJournal/journal.db` (or `$XDG_DATA_HOME/CalendarJournal`) |
-| macOS | `~/Library/Application Support/CalendarJournal/journal.db` |
-| Windows | `%APPDATA%\CalendarJournal\journal.db` |
+| Linux | `~/.local/share/ScribeDay/journal.db` (or `$XDG_DATA_HOME/ScribeDay`) |
+| macOS | `~/Library/Application Support/ScribeDay/journal.db` |
+| Windows | `%APPDATA%\ScribeDay\journal.db` |
 
 A legacy `~/journal.db` from the earliest version is migrated automatically on first run.
 
 ## Project layout
 
 ```
-src/main/java/com/journal/
+src/main/java/in/systemhalted/scribeday/
   Launcher.java            # plain main() entry point (fat-jar / jpackage friendly)
   JournalApp.java          # JavaFX Application — wires DAO to the UI
   CalendarView.java        # month grid: navigation, entry dots, today highlight
   JournalEditorDialog.java # the editor: text area + Save / Delete / Cancel
   JournalDao.java          # all SQLite access; versioned schema + migrations + FTS
   AppPaths.java            # resolves the per-user data directory
-src/test/java/com/journal/
+src/test/java/in/systemhalted/scribeday/
   JournalDaoTest.java      # schema, migration, and search tests
 build-deb.sh               # builds the .deb via jpackage
 ROADMAP.md                 # product roadmap (v1.0 → v2.0)

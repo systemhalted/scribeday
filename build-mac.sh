@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build the Calendar Journal desktop app as a macOS .dmg (with a bundled Java +
+# Build the ScribeDay desktop app as a macOS .dmg (with a bundled Java +
 # JavaFX runtime) using jpackage. Run this ON macOS.
 #
 # Usage:  ./build-mac.sh
@@ -25,18 +25,18 @@ mvn -q package -DskipTests "-Djavafx.platform=$PLATFORM"
 echo "==> Staging jar"
 rm -rf packaging/stage packaging/dist
 mkdir -p packaging/stage packaging/dist
-cp target/calendar-journal.jar packaging/stage/
+cp target/scribeday.jar packaging/stage/
 
 echo "==> Running jpackage (.dmg)"
 jpackage \
   --type dmg \
-  --name "Calendar Journal" \
+  --name "ScribeDay" \
   --app-version "$VERSION" \
-  --description "Calendar journal — click a day to write and save an entry (SQLite)." \
+  --description "ScribeDay — click a day to write and save an entry (SQLite)." \
   --vendor "Palak" \
   --input packaging/stage \
-  --main-jar calendar-journal.jar \
-  --main-class com.journal.Launcher \
+  --main-jar scribeday.jar \
+  --main-class in.systemhalted.scribeday.Launcher \
   --dest packaging/dist
 
 echo "==> Done:"

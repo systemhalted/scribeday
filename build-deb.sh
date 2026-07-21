@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Build the Calendar Journal desktop app as an installable .deb (with a bundled
+# Build the ScribeDay desktop app as an installable .deb (with a bundled
 # Java runtime) using jpackage.
 #
 # Usage:   ./build-deb.sh
-# Install: sudo apt install ./packaging/dist/calendar-journal_<version>_amd64.deb
-# Remove:  sudo apt remove calendar-journal
+# Install: sudo apt install ./packaging/dist/scribeday_<version>_amd64.deb
+# Remove:  sudo apt remove scribeday
 #
 set -euo pipefail
 
@@ -18,19 +18,19 @@ mvn -q package
 echo "==> Staging jar"
 rm -rf packaging/stage packaging/dist
 mkdir -p packaging/stage packaging/dist
-cp target/calendar-journal.jar packaging/stage/
+cp target/scribeday.jar packaging/stage/
 
 echo "==> Running jpackage (.deb, bundled runtime)"
 jpackage \
   --type deb \
-  --name "Calendar Journal" \
-  --linux-package-name calendar-journal \
+  --name "ScribeDay" \
+  --linux-package-name scribeday \
   --app-version "$VERSION" \
-  --description "Calendar journal — click a day to write and save an entry (SQLite)." \
+  --description "ScribeDay — click a day to write and save an entry (SQLite)." \
   --vendor "Palak" \
   --input packaging/stage \
-  --main-jar calendar-journal.jar \
-  --main-class com.journal.Launcher \
+  --main-jar scribeday.jar \
+  --main-class in.systemhalted.scribeday.Launcher \
   --icon packaging/icon.png \
   --linux-shortcut \
   --linux-menu-group "Office" \

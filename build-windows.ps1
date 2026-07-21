@@ -1,4 +1,4 @@
-# Build the Calendar Journal desktop app as a Windows .msi (with a bundled Java +
+# Build the ScribeDay desktop app as a Windows .msi (with a bundled Java +
 # JavaFX runtime) using jpackage. Run this ON Windows in PowerShell.
 #
 # Usage:    .\build-windows.ps1
@@ -16,18 +16,18 @@ mvn -q package -DskipTests "-Djavafx.platform=win"
 Write-Host "==> Staging jar"
 Remove-Item -Recurse -Force packaging\stage, packaging\dist -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force packaging\stage, packaging\dist | Out-Null
-Copy-Item target\calendar-journal.jar packaging\stage\
+Copy-Item target\scribeday.jar packaging\stage\
 
 Write-Host "==> Running jpackage (.msi)"
 jpackage `
   --type msi `
-  --name "Calendar Journal" `
+  --name "ScribeDay" `
   --app-version $Version `
-  --description "Calendar journal - click a day to write and save an entry (SQLite)." `
+  --description "ScribeDay - click a day to write and save an entry (SQLite)." `
   --vendor "Palak" `
   --input packaging\stage `
-  --main-jar calendar-journal.jar `
-  --main-class com.journal.Launcher `
+  --main-jar scribeday.jar `
+  --main-class in.systemhalted.scribeday.Launcher `
   --win-menu --win-shortcut --win-dir-chooser `
   --dest packaging\dist
 
