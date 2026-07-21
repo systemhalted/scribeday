@@ -12,6 +12,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -98,6 +100,13 @@ public class JournalEditorDialog extends Stage {
 
         HBox moodBox = buildMoodPicker(existing == null ? null : existing.mood(), debounce);
 
+        MenuButton template = new MenuButton("Template");
+        for (EntryTemplate t : EntryTemplate.values()) {
+            MenuItem item = new MenuItem(t.displayName());
+            item.setOnAction(e -> applyTemplate(t));
+            template.getItems().add(item);
+        }
+
         Button export = new Button("Export…");
         export.setOnAction(e -> exportEntry());
 
@@ -110,7 +119,7 @@ public class JournalEditorDialog extends Stage {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox bottom = new HBox(12, status, count, moodBox, spacer, previewToggle, export, delete, close);
+        HBox bottom = new HBox(12, status, count, moodBox, spacer, template, previewToggle, export, delete, close);
         bottom.setAlignment(Pos.CENTER_LEFT);
 
         VBox.setMargin(titleField, new Insets(0, 0, 4, 0));
@@ -252,6 +261,23 @@ public class JournalEditorDialog extends Stage {
                 + "blockquote{border-left:3px solid #888;margin-left:0;padding-left:12px;color:#999;}";
         return "<!DOCTYPE html><html><head><meta charset='utf-8'><style>" + css
                 + "</style></head><body>" + bodyHtml + "</body></html>";
+    }
+
+    /** Insert the template body, confirming first when it would replace existing text. */
+    private void applyTemplate(EntryTemplate template) {
+        if (!textArea.getText().isBlank()) {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Replace the current text with the \"" + template.displayName() + "\" template?",
+                    ButtonType.YES, ButtonType.NO);
+            confirm.setHeaderText(null);
+            confirm.initOwner(this);
+            if (confirm.showAndWait().filter(b -> b == ButtonType.YES).isEmpty()) {
+                return;
+            }
+        }
+        textArea.setText(template.body());
+        textArea.positionCaret(textArea.getText().length());
+        textArea.requestFocus();
     }
 
     private void exportEntry() {
