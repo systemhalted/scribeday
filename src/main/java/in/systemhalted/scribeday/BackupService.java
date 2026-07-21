@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * Backup and restore for the single-file SQLite journal database.
@@ -40,6 +41,22 @@ public final class BackupService {
             return destination;
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to back up to " + destination, e);
+        }
+    }
+
+    /**
+     * Parse the timestamp out of a backup file name produced by
+     * {@link #backupFileName}; {@code null} for any other name.
+     */
+    public static LocalDateTime parseBackupTimestamp(String fileName) {
+        if (fileName == null || !fileName.startsWith("scribeday-") || !fileName.endsWith(".db")) {
+            return null;
+        }
+        String stamp = fileName.substring("scribeday-".length(), fileName.length() - ".db".length());
+        try {
+            return LocalDateTime.parse(stamp, STAMP);
+        } catch (DateTimeParseException e) {
+            return null;
         }
     }
 

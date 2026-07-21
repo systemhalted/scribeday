@@ -67,4 +67,23 @@ class SettingsTest {
         settings.setWelcomeShown(true);
         assertEquals(true, settings.welcomeShown());
     }
+
+    @Test
+    void autoBackupDefaultsAreOnWeeklyKeepTen() {
+        Settings settings = new Settings(dao());
+        assertEquals(true, settings.autoBackupEnabled());
+        assertEquals(7, settings.autoBackupIntervalDays());
+        assertEquals(10, settings.autoBackupKeep());
+    }
+
+    @Test
+    void autoBackupSettingsRoundTrip() {
+        Settings settings = new Settings(dao());
+        settings.setAutoBackupEnabled(false);
+        settings.setAutoBackupIntervalDays(3);
+        settings.setAutoBackupKeep(5);
+        assertEquals(false, settings.autoBackupEnabled());
+        assertEquals(3, settings.autoBackupIntervalDays());
+        assertEquals(5, settings.autoBackupKeep());
+    }
 }

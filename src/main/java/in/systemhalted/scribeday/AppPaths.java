@@ -45,6 +45,17 @@ public final class AppPaths {
         return base.resolve(APP_DIR_NAME);
     }
 
+    /** The directory automatic backups are written to (created on demand). */
+    public static Path backupsDir() {
+        Path dir = dataDir().resolve("backups");
+        try {
+            Files.createDirectories(dir);
+            return dir;
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not prepare backups directory at " + dir, e);
+        }
+    }
+
     /**
      * The journal database path. Creates the data directory if needed and, on
      * first run, migrates a legacy {@code ~/journal.db} (from the early version

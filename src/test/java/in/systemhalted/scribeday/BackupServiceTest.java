@@ -77,4 +77,17 @@ class BackupServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> BackupService.restore(junk, target));
     }
+
+    @Test
+    void parseBackupTimestampRoundTripsBackupFileName() {
+        LocalDateTime when = LocalDateTime.of(2026, 6, 9, 21, 34, 5);
+        assertEquals(when, BackupService.parseBackupTimestamp(BackupService.backupFileName(when)));
+    }
+
+    @Test
+    void parseBackupTimestampNullForForeignNames() {
+        assertEquals(null, BackupService.parseBackupTimestamp("notes.txt"));
+        assertEquals(null, BackupService.parseBackupTimestamp("scribeday-notatimestamp.db"));
+        assertEquals(null, BackupService.parseBackupTimestamp("scribeday-.db"));
+    }
 }

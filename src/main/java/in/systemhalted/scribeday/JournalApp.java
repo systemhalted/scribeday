@@ -74,6 +74,27 @@ public class JournalApp extends Application {
         stage.show();
 
         maybeShowWelcome(stage);
+        runAutoBackup();
+    }
+
+    /** Take a scheduled backup if one is due, off the FX thread; only failures are surfaced. */
+    private void runAutoBackup() {
+        if (!settings.autoBackupEnabled()) {
+            return;
+        }
+        int intervalDays = settings.autoBackupIntervalDays();
+        int keep = settings.autoBackupKeep();
+        Thread worker = new Thread(() -> {
+            try {
+                AutoBackup.runIfDue(dbPath, AppPaths.backupsDir(), intervalDays, keep,
+                        LocalDateTime.now());
+            } catch (RuntimeException ex) {
+                Platform.runLater(() ->
+                        alert(Alert.AlertType.WARNING, "Automatic backup failed", ex.getMessage()));
+            }
+        }, "auto-backup");
+        worker.setDaemon(true);
+        worker.start();
     }
 
     private MenuBar buildMenuBar(Stage stage) {

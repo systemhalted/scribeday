@@ -12,10 +12,16 @@ public class Settings {
     public static final String WEEK_START = "calendar.week.start";
     public static final String THEME = "app.theme";
     public static final String WELCOME_SHOWN = "app.welcome.shown";
+    public static final String AUTO_BACKUP_ENABLED = "backup.auto.enabled";
+    public static final String AUTO_BACKUP_INTERVAL_DAYS = "backup.auto.interval.days";
+    public static final String AUTO_BACKUP_KEEP = "backup.auto.keep";
 
     public static final int DEFAULT_EDITOR_FONT_SIZE = 14;
     public static final DayOfWeek DEFAULT_WEEK_START = DayOfWeek.SUNDAY;
     public static final Theme DEFAULT_THEME = Theme.LIGHT;
+    public static final boolean DEFAULT_AUTO_BACKUP_ENABLED = true;
+    public static final int DEFAULT_AUTO_BACKUP_INTERVAL_DAYS = 7;
+    public static final int DEFAULT_AUTO_BACKUP_KEEP = 10;
 
     private final SettingsDao dao;
 
@@ -58,5 +64,29 @@ public class Settings {
 
     public void setWelcomeShown(boolean shown) {
         dao.setBoolean(WELCOME_SHOWN, shown);
+    }
+
+    public boolean autoBackupEnabled() {
+        return dao.getBoolean(AUTO_BACKUP_ENABLED, DEFAULT_AUTO_BACKUP_ENABLED);
+    }
+
+    public void setAutoBackupEnabled(boolean enabled) {
+        dao.setBoolean(AUTO_BACKUP_ENABLED, enabled);
+    }
+
+    public int autoBackupIntervalDays() {
+        return dao.getInt(AUTO_BACKUP_INTERVAL_DAYS, DEFAULT_AUTO_BACKUP_INTERVAL_DAYS);
+    }
+
+    public void setAutoBackupIntervalDays(int days) {
+        dao.setInt(AUTO_BACKUP_INTERVAL_DAYS, days);
+    }
+
+    public int autoBackupKeep() {
+        return dao.getInt(AUTO_BACKUP_KEEP, DEFAULT_AUTO_BACKUP_KEEP);
+    }
+
+    public void setAutoBackupKeep(int keep) {
+        dao.setInt(AUTO_BACKUP_KEEP, keep);
     }
 }

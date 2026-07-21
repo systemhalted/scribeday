@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -68,12 +69,28 @@ public class PreferencesDialog extends Stage {
             }
         });
 
+        CheckBox autoBackup = new CheckBox("Back up automatically on launch");
+        autoBackup.setSelected(settings.autoBackupEnabled());
+
+        Spinner<Integer> backupInterval = new Spinner<>(1, 30, settings.autoBackupIntervalDays());
+        backupInterval.setEditable(true);
+        backupInterval.setPrefWidth(80);
+        backupInterval.disableProperty().bind(autoBackup.selectedProperty().not());
+
+        Spinner<Integer> backupKeep = new Spinner<>(1, 50, settings.autoBackupKeep());
+        backupKeep.setEditable(true);
+        backupKeep.setPrefWidth(80);
+        backupKeep.disableProperty().bind(autoBackup.selectedProperty().not());
+
         GridPane form = new GridPane();
         form.setHgap(12);
         form.setVgap(12);
         form.addRow(0, new Label("Theme:"), theme);
         form.addRow(1, new Label("Editor font size:"), fontSize);
         form.addRow(2, new Label("Week starts on:"), weekStart);
+        form.add(autoBackup, 0, 3, 2, 1);
+        form.addRow(4, new Label("Back up every (days):"), backupInterval);
+        form.addRow(5, new Label("Backups to keep:"), backupKeep);
 
         Button save = new Button("Save");
         save.setDefaultButton(true);
@@ -81,6 +98,9 @@ public class PreferencesDialog extends Stage {
             settings.setTheme(theme.getValue());
             settings.setEditorFontSize(fontSize.getValue());
             settings.setWeekStart(weekStart.getValue());
+            settings.setAutoBackupEnabled(autoBackup.isSelected());
+            settings.setAutoBackupIntervalDays(backupInterval.getValue());
+            settings.setAutoBackupKeep(backupKeep.getValue());
             if (onSaved != null) {
                 onSaved.run();
             }
