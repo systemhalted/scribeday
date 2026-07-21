@@ -17,6 +17,7 @@ public class AgendaView extends BorderPane {
     private final JournalDao dao;
     private final Settings settings;
     private final ListView<SearchHit> list = new ListView<>();
+    private Runnable onEdited = () -> { };
 
     public AgendaView(JournalDao dao, Settings settings) {
         this.dao = dao;
@@ -44,6 +45,11 @@ public class AgendaView extends BorderPane {
         list.getItems().setAll(dao.recentEntries(MAX_ENTRIES));
     }
 
+    /** Called after an entry has been edited from this view (e.g. to update stats). */
+    public void setOnEdited(Runnable onEdited) {
+        this.onEdited = onEdited;
+    }
+
     private void openSelected() {
         SearchHit hit = list.getSelectionModel().getSelectedItem();
         if (hit == null) {
@@ -51,5 +57,6 @@ public class AgendaView extends BorderPane {
         }
         new JournalEditorDialog(getScene().getWindow(), dao, settings, hit.date()).showAndWait();
         refresh();
+        onEdited.run();
     }
 }

@@ -10,6 +10,8 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -20,6 +22,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -37,6 +40,7 @@ public class JournalApp extends Application {
     private BorderPane root;
     private CalendarView calendarView;
     private AgendaView agendaView;
+    private final Label statsLabel = new Label();
 
     @Override
     public void init() {
@@ -52,10 +56,14 @@ public class JournalApp extends Application {
     public void start(Stage stage) {
         calendarView = new CalendarView(dao, settings, YearMonth.now());
         agendaView = new AgendaView(dao, settings);
+        calendarView.setOnEdited(this::updateStats);
+        agendaView.setOnEdited(this::updateStats);
 
         root = new BorderPane();
         root.setTop(buildMenuBar(stage));
         root.setCenter(calendarView);
+        root.setBottom(buildStatusBar());
+        updateStats();
 
         scene = new Scene(root, 580, 560);
         settings.theme().applyTo(scene);
@@ -214,6 +222,30 @@ public class JournalApp extends Application {
     private void refreshViews() {
         calendarView.refresh();
         agendaView.refresh();
+        updateStats();
+    }
+
+    private HBox buildStatusBar() {
+        HBox bar = new HBox(statsLabel);
+        bar.getStyleClass().add("status-bar");
+        bar.setPadding(new Insets(4, 12, 6, 12));
+        return bar;
+    }
+
+    /** Recompute the streak/entry summary shown in the status bar. */
+    private void updateStats() {
+        Streaks.Stats s = Streaks.compute(dao.allEntryDates(), LocalDate.now());
+        if (s.totalDays() == 0) {
+            statsLabel.setText("No entries yet — click a day to start your streak");
+            return;
+        }
+        statsLabel.setText("Streak: " + days(s.current())
+                + " · Longest: " + days(s.longest())
+                + " · " + s.totalDays() + (s.totalDays() == 1 ? " entry" : " entries"));
+    }
+
+    private static String days(int n) {
+        return n + (n == 1 ? " day" : " days");
     }
 
     public static void main(String[] args) {

@@ -351,6 +351,22 @@ public class JournalDao {
         return dates;
     }
 
+    /** @return every distinct date that has an entry, in ascending order. */
+    public List<LocalDate> allEntryDates() {
+        String sql = "SELECT DISTINCT entry_date FROM entries ORDER BY entry_date";
+        List<LocalDate> dates = new ArrayList<>();
+        try (Connection conn = connect();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                dates.add(LocalDate.parse(rs.getString("entry_date")));
+            }
+        } catch (SQLException e) {
+            throw new JournalException("Failed to list entry dates", e);
+        }
+        return dates;
+    }
+
     /** @return each date within the month whose entry has a mood recorded. */
     public Map<LocalDate, Mood> moodsForMonth(YearMonth month) {
         String sql = """

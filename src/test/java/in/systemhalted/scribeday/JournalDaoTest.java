@@ -237,6 +237,22 @@ class JournalDaoTest {
     }
 
     @Test
+    void allEntryDatesAreDistinctAndSorted() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2026, 6, 10), "b", "two");
+        dao.saveEntry(LocalDate.of(2026, 6, 1), "a", "one");
+        dao.saveEntry(LocalDate.of(2026, 7, 4), "c", "three");
+        assertEquals(
+                List.of(LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 10), LocalDate.of(2026, 7, 4)),
+                dao.allEntryDates());
+    }
+
+    @Test
+    void allEntryDatesEmptyOnFreshDatabase() {
+        assertTrue(freshDao().allEntryDates().isEmpty());
+    }
+
+    @Test
     void initIsIdempotent() {
         JournalDao dao = freshDao();
         dao.save(LocalDate.of(2026, 6, 9), "kept across re-init");

@@ -37,6 +37,7 @@ public class CalendarView extends BorderPane {
 
     private final Label headerLabel = new Label();
     private final GridPane grid = new GridPane();
+    private Runnable onEdited = () -> { };
 
     public CalendarView(JournalDao dao, Settings settings, YearMonth initialMonth) {
         this.dao = dao;
@@ -53,6 +54,11 @@ public class CalendarView extends BorderPane {
     /** Re-read settings and rebuild the grid (e.g. after Preferences changes). */
     public void refresh() {
         rebuild();
+    }
+
+    /** Called after an entry has been edited from this view (e.g. to update stats). */
+    public void setOnEdited(Runnable onEdited) {
+        this.onEdited = onEdited;
     }
 
     private HBox buildHeader() {
@@ -158,6 +164,7 @@ public class CalendarView extends BorderPane {
             JournalEditorDialog editor = new JournalEditorDialog(getScene().getWindow(), dao, settings, date);
             editor.showAndWait();
             rebuild();
+            onEdited.run();
         });
         return button;
     }
