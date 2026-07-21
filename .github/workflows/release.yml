@@ -93,6 +93,12 @@ jobs:
           pattern: installer-*
           path: dist
           merge-multiple: true
+      - name: Parse version from tag
+        id: version
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          VER="${TAG#v}"
+          echo "ver=${VER}" >> $GITHUB_OUTPUT
       - name: Generate SHA-256 checksums
         working-directory: dist
         run: sha256sum * | tee SHA256SUMS.txt
@@ -108,10 +114,10 @@ jobs:
             with Markdown preview, full-text search, theming, backup/restore, and Markdown export.
 
             ## Installers
-            - **Linux (Debian/Ubuntu):** `scribeday_1.0.0_amd64.deb` — `sudo apt install ./scribeday_1.0.0_amd64.deb`
-            - **Windows:** `ScribeDay-1.0.0.msi` (unsigned — SmartScreen may warn)
-            - **macOS (Apple Silicon):** `ScribeDay-1.0.0.dmg` (unsigned — right-click → Open on first launch)
-            - **macOS (Intel):** `ScribeDay-1.0.0-Intel.dmg` — attached when the Intel build is available
+            - **Linux (Debian/Ubuntu):** `scribeday_${{ steps.version.outputs.ver }}_amd64.deb` — `sudo apt install ./scribeday_${{ steps.version.outputs.ver }}_amd64.deb`
+            - **Windows:** `ScribeDay-${{ steps.version.outputs.ver }}.msi` (unsigned — SmartScreen may warn)
+            - **macOS (Apple Silicon):** `ScribeDay-${{ steps.version.outputs.ver }}.dmg` (unsigned — right-click → Open on first launch)
+            - **macOS (Intel):** `ScribeDay-${{ steps.version.outputs.ver }}-Intel.dmg` — attached when the Intel build is available
 
             Each installer bundles its own Java + JavaFX runtime; no separate Java install is needed.
 

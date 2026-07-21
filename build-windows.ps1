@@ -7,7 +7,7 @@
 # Note:     the produced .msi is unsigned; SmartScreen may warn on first run.
 
 $ErrorActionPreference = "Stop"
-$Version = "1.0.0"
+$Version = (mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
 Set-Location -Path $PSScriptRoot
 
 Write-Host "==> Building jar (javafx.platform=win)"
