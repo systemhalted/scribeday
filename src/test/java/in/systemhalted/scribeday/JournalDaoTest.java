@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -189,6 +190,50 @@ class JournalDaoTest {
     @Test
     void recentEntriesEmptyWhenNoEntries() {
         assertTrue(freshDao().recentEntries(10).isEmpty());
+    }
+
+    @Test
+    void saveEntryWithMoodRoundTrips() {
+        JournalDao dao = freshDao();
+        LocalDate d = LocalDate.of(2026, 6, 9);
+        dao.saveEntry(d, "t", "c", Mood.GOOD);
+        assertEquals(Mood.GOOD, dao.loadEntry(d).mood());
+    }
+
+    @Test
+    void moodAwareSaveCanClearMood() {
+        JournalDao dao = freshDao();
+        LocalDate d = LocalDate.of(2026, 6, 9);
+        dao.saveEntry(d, "t", "c", Mood.LOW);
+        dao.saveEntry(d, "t", "c", null);
+        assertNull(dao.loadEntry(d).mood());
+    }
+
+    @Test
+    void threeArgSaveEntryPreservesExistingMood() {
+        JournalDao dao = freshDao();
+        LocalDate d = LocalDate.of(2026, 6, 9);
+        dao.saveEntry(d, "t", "c", Mood.GREAT);
+        dao.saveEntry(d, "t2", "c2");   // mood-unaware caller must not wipe mood
+        assertEquals(Mood.GREAT, dao.loadEntry(d).mood());
+    }
+
+    @Test
+    void loadEntryReturnsNullMoodForLegacyRows() {
+        JournalDao dao = freshDao();
+        LocalDate d = LocalDate.of(2026, 6, 9);
+        dao.saveEntry(d, "t", "c");
+        assertNull(dao.loadEntry(d).mood());
+    }
+
+    @Test
+    void moodsForMonthIsScopedAndSkipsMoodlessEntries() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2026, 6, 9), "t", "c", Mood.GREAT);
+        dao.saveEntry(LocalDate.of(2026, 6, 10), "t", "c");                  // no mood
+        dao.saveEntry(LocalDate.of(2026, 7, 1), "t", "c", Mood.BAD);         // other month
+        Map<LocalDate, Mood> moods = dao.moodsForMonth(YearMonth.of(2026, 6));
+        assertEquals(Map.of(LocalDate.of(2026, 6, 9), Mood.GREAT), moods);
     }
 
     @Test

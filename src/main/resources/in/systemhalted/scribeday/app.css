@@ -19,6 +19,19 @@
     -fx-font-size: 10px;
 }
 
+/* Mood colors: calendar-day markers (labels) and editor picker toggles. */
+.mood-great { -fx-text-fill: #1a7f37; -fx-font-size: 10px; }
+.mood-good  { -fx-text-fill: #7cb342; -fx-font-size: 10px; }
+.mood-ok    { -fx-text-fill: #f0a500; -fx-font-size: 10px; }
+.mood-low   { -fx-text-fill: #ef6c00; -fx-font-size: 10px; }
+.mood-bad   { -fx-text-fill: #c62828; -fx-font-size: 10px; }
+
+.toggle-button.mood-great, .toggle-button.mood-good, .toggle-button.mood-ok,
+.toggle-button.mood-low, .toggle-button.mood-bad {
+    -fx-font-size: 11px;
+    -fx-padding: 2 6 2 6;
+}
+
 .day-cell.today {
     -fx-background-color: #d6e9ff;
     -fx-border-color: #1a7f37;

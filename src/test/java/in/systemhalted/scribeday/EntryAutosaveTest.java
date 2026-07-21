@@ -60,4 +60,19 @@ class EntryAutosaveTest {
         EntryAutosave.persist(dao, date, "", "");
         assertNull(dao.loadEntry(date));
     }
+
+    @Test
+    void moodIsPersistedWithTheEntry() {
+        JournalDao dao = freshDao();
+        EntryAutosave.persist(dao, date, "t", "c", Mood.GOOD);
+        assertEquals(Mood.GOOD, dao.loadEntry(date).mood());
+    }
+
+    @Test
+    void bothBlankRemovesEntryEvenWithMoodSelected() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(date, "t", "c", Mood.GREAT);
+        EntryAutosave.persist(dao, date, "", "", Mood.GREAT);
+        assertNull(dao.loadEntry(date));
+    }
 }

@@ -14,6 +14,8 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -48,6 +50,7 @@ public class JournalEditorDialog extends Stage {
     private final TextArea textArea = new TextArea();
     private final Label status = new Label();
     private final Label count = new Label();
+    private final ToggleGroup moodGroup = new ToggleGroup();
     private final ToggleButton previewToggle = new ToggleButton("Preview");
     private final SplitPane split = new SplitPane();
     private final BorderPane root = new BorderPane();
@@ -87,6 +90,8 @@ public class JournalEditorDialog extends Stage {
 
         previewToggle.selectedProperty().addListener((obs, was, on) -> setPreviewVisible(on));
 
+        HBox moodBox = buildMoodPicker(existing == null ? null : existing.mood(), debounce);
+
         Button export = new Button("Export…");
         export.setOnAction(e -> exportEntry());
 
@@ -99,7 +104,7 @@ public class JournalEditorDialog extends Stage {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        HBox bottom = new HBox(12, status, count, spacer, previewToggle, export, delete, close);
+        HBox bottom = new HBox(12, status, count, moodBox, spacer, previewToggle, export, delete, close);
         bottom.setAlignment(Pos.CENTER_LEFT);
 
         VBox.setMargin(titleField, new Insets(0, 0, 4, 0));
@@ -120,6 +125,30 @@ public class JournalEditorDialog extends Stage {
 
         setScene(new Scene(root, 580, 480));
         settings.theme().applyTo(getScene());
+    }
+
+    /** One toggle per mood; selecting (or clearing) a mood autosaves like typing does. */
+    private HBox buildMoodPicker(Mood existing, PauseTransition debounce) {
+        HBox box = new HBox(2);
+        box.setAlignment(Pos.CENTER_LEFT);
+        for (Mood mood : Mood.values()) {
+            ToggleButton toggle = new ToggleButton(mood.glyph());
+            toggle.setUserData(mood);
+            toggle.setToggleGroup(moodGroup);
+            toggle.getStyleClass().add(mood.styleClass());
+            toggle.setTooltip(new Tooltip(mood.displayName()));
+            if (mood == existing) {
+                toggle.setSelected(true);
+            }
+            box.getChildren().add(toggle);
+        }
+        moodGroup.selectedToggleProperty().addListener((obs, old, val) -> onEdit(debounce));
+        return box;
+    }
+
+    private Mood selectedMood() {
+        return moodGroup.getSelectedToggle() == null ? null
+                : (Mood) moodGroup.getSelectedToggle().getUserData();
     }
 
     private void onEdit(PauseTransition debounce) {
@@ -193,7 +222,7 @@ public class JournalEditorDialog extends Stage {
     }
 
     private void autosave() {
-        EntryAutosave.persist(dao, date, titleField.getText(), textArea.getText());
+        EntryAutosave.persist(dao, date, titleField.getText(), textArea.getText(), selectedMood());
         boolean empty = titleField.getText().isBlank() && textArea.getText().isBlank();
         status.setText(empty ? "" : "Saved");
     }

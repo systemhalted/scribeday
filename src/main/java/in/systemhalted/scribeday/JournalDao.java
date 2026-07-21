@@ -10,8 +10,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -225,20 +227,26 @@ public class JournalDao {
         }
     }
 
-    /** @return the entry (title + content) for the date, or {@code null} if none exists. */
+    /** @return the entry (title + content + mood) for the date, or {@code null} if none exists. */
     public Entry loadEntry(LocalDate date) {
-        String sql = "SELECT title, content FROM entries WHERE entry_date = ? ORDER BY id LIMIT 1";
+        String sql = "SELECT title, content, mood FROM entries WHERE entry_date = ? ORDER BY id LIMIT 1";
         try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, date.toString());
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? new Entry(rs.getString("title"), rs.getString("content")) : null;
+                return rs.next()
+                        ? new Entry(rs.getString("title"), rs.getString("content"),
+                                Mood.fromName(rs.getString("mood")))
+                        : null;
             }
         } catch (SQLException e) {
             throw new JournalException("Failed to load entry for " + date, e);
         }
     }
 
-    /** Insert or update the (single) entry for the given date, including its title. */
+    /**
+     * Insert or update the (single) entry for the given date, including its title.
+     * Leaves any stored mood untouched, so mood-unaware callers cannot wipe it.
+     */
     public void saveEntry(LocalDate date, String title, String content) {
         String now = LocalDateTime.now().toString();
         try (Connection conn = connect()) {
@@ -260,6 +268,42 @@ public class JournalDao {
                     ps.setString(3, content);
                     ps.setString(4, now);
                     ps.setString(5, now);
+                    ps.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            throw new JournalException("Failed to save entry for " + date, e);
+        }
+    }
+
+    /**
+     * Insert or update the (single) entry for the given date, including its title
+     * and mood. A {@code null} mood clears any stored one.
+     */
+    public void saveEntry(LocalDate date, String title, String content, Mood mood) {
+        String now = LocalDateTime.now().toString();
+        String moodName = mood == null ? null : mood.name();
+        try (Connection conn = connect()) {
+            Integer id = findEntryId(conn, date);
+            if (id != null) {
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "UPDATE entries SET title = ?, content = ?, mood = ?, updated_at = ? WHERE id = ?")) {
+                    ps.setString(1, title);
+                    ps.setString(2, content);
+                    ps.setString(3, moodName);
+                    ps.setString(4, now);
+                    ps.setInt(5, id);
+                    ps.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "INSERT INTO entries (entry_date, title, content, mood, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")) {
+                    ps.setString(1, date.toString());
+                    ps.setString(2, title);
+                    ps.setString(3, content);
+                    ps.setString(4, moodName);
+                    ps.setString(5, now);
+                    ps.setString(6, now);
                     ps.executeUpdate();
                 }
             }
@@ -305,6 +349,30 @@ public class JournalDao {
             throw new JournalException("Failed to query entries for " + month, e);
         }
         return dates;
+    }
+
+    /** @return each date within the month whose entry has a mood recorded. */
+    public Map<LocalDate, Mood> moodsForMonth(YearMonth month) {
+        String sql = """
+                SELECT entry_date, mood FROM entries
+                WHERE entry_date >= ? AND entry_date <= ? AND mood IS NOT NULL
+                """;
+        Map<LocalDate, Mood> moods = new HashMap<>();
+        try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, month.atDay(1).toString());
+            ps.setString(2, month.atEndOfMonth().toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Mood mood = Mood.fromName(rs.getString("mood"));
+                    if (mood != null) {
+                        moods.put(LocalDate.parse(rs.getString("entry_date")), mood);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new JournalException("Failed to query moods for " + month, e);
+        }
+        return moods;
     }
 
     /**

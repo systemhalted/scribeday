@@ -16,6 +16,12 @@
     -fx-text-fill: #5fcf7f;
 }
 
+.mood-great { -fx-text-fill: #5fcf7f; }
+.mood-good  { -fx-text-fill: #9ccc65; }
+.mood-ok    { -fx-text-fill: #ffca28; }
+.mood-low   { -fx-text-fill: #ff9800; }
+.mood-bad   { -fx-text-fill: #ef5350; }
+
 .day-cell.today {
     -fx-background-color: #2d4a63;
     -fx-border-color: #5fcf7f;

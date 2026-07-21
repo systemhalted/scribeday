@@ -6,6 +6,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -112,13 +113,14 @@ public class CalendarView extends BorderPane {
         }
 
         Set<LocalDate> withEntries = dao.datesWithEntries(current);
+        Map<LocalDate, Mood> moods = dao.moodsForMonth(current);
         LocalDate today = LocalDate.now();
 
         int row = 1;
         for (int day = 1; day <= current.lengthOfMonth(); day++) {
             LocalDate date = current.atDay(day);
             int col = columnFor(date, weekStart);
-            grid.add(buildDayButton(date, withEntries.contains(date), date.equals(today)), col, row);
+            grid.add(buildDayButton(date, withEntries.contains(date), moods.get(date), date.equals(today)), col, row);
             if (col == 6) {
                 row++;
             }
@@ -130,13 +132,13 @@ public class CalendarView extends BorderPane {
         return (date.getDayOfWeek().getValue() - weekStart.getValue() + 7) % 7;
     }
 
-    private Button buildDayButton(LocalDate date, boolean hasEntry, boolean isToday) {
+    private Button buildDayButton(LocalDate date, boolean hasEntry, Mood mood, boolean isToday) {
         Label number = new Label(String.valueOf(date.getDayOfMonth()));
         VBox content = new VBox(2, number);
         content.setAlignment(Pos.TOP_CENTER);
         if (hasEntry) {
-            Label dot = new Label("●");
-            dot.getStyleClass().add("entry-dot");
+            Label dot = new Label(mood == null ? "●" : mood.glyph());
+            dot.getStyleClass().add(mood == null ? "entry-dot" : mood.styleClass());
             content.getChildren().add(dot);
         }
 
