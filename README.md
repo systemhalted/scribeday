@@ -11,11 +11,13 @@ polished, shippable product (see [ROADMAP.md](ROADMAP.md)).
 ## Features
 
 - Month calendar with previous/next navigation; today is highlighted.
-- Click a day to open the editor; write, **Save**, or **Delete**.
-- Days with an entry are marked with a green dot.
-- One entry per day, stored in SQLite.
-- Full-text search index over entries (schema-level; UI coming per the roadmap).
-- Data kept in a stable per-user location that survives reinstalls.
+- Click a day to write; entries autosave, with title, word count, and live Markdown preview.
+- Mood per entry, shown color-coded on the calendar; templates for a quick start.
+- Writing streaks and entry count in a status bar; "On this day" resurfaces past years.
+- Full-text search (Ctrl+F) and an agenda list view.
+- Backup & restore, automatic weekly backups, and Markdown export.
+- Opt-in daily reminder (fires while the app is open) and optional close-to-tray.
+- One entry per day, stored in SQLite in a stable per-user location that survives reinstalls.
 
 ## Tech stack
 

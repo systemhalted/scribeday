@@ -66,34 +66,39 @@ These unlock most of the roadmap:
 
 **Build order:** foundations → writing → organize → data → polish.
 
-## v1.1 — Writing experience
-- Mood / rating per entry (shown on the calendar)
-- Tags on entries
-- Multiple entries per day (timestamped)
-- Entry templates (gratitude, daily standup, free-write)
-- Distraction-free full-screen mode
-- Inline images / attachments
-- Spellcheck + font preferences
+## v1.1 — "Make the habit stick" ✅ COMPLETE
+
+A habit-first release, pulling the retention features forward from the original
+v1.1/v1.2/v1.4 buckets:
+
+| Theme | Feature |
+|-------|---------|
+| Writing | Mood per entry, shown color-coded on the calendar ✅ |
+| Habit | Streaks & entry count in a status bar ✅ |
+| Habit | "On this day" — past years' entries inside the editor ✅ |
+| Writing | Entry templates (gratitude, daily standup, free-write) ✅ |
+| Data | Scheduled auto-backup on launch (interval + prune, on by default) ✅ |
+| Habit | Opt-in daily reminder at a chosen time (while the app runs) ✅ |
+| Habit | Optional close-to-system-tray with tray notifications ✅ |
 
 ## v1.2 — Find & organize
-- Tag browser & filtering
+- Tags on entries + tag browser & filtering
 - Filter by mood / date range
 - Year heatmap (contribution-grid of activity)
-- Streaks & stats dashboard
-- "On this day" (entries from this date in prior years)
 - Year-in-review summary
+- Multiple entries per day (timestamped)
 
 ## v1.3 — Data safety
-- Scheduled auto-backup (keep last N, prune old)
 - Encryption at rest (SQLCipher, opt-in)
 - App password / lock screen
 - Import from plain text / Markdown folders
 - Import from other journals (e.g. Day One JSON)
 - Full JSON export (round-trippable)
 
-## v1.4 — Reminders & habit
-- Daily reminder notification at a chosen time
-- System tray icon (quick "new entry today")
+## v1.4 — Writing & habit polish
+- Distraction-free full-screen mode
+- Inline images / attachments
+- Spellcheck + font preferences
 - Launch-on-login option
 - Habit goals & progress (target N days/week)
 - Streak badges (7 / 30 / 100 days)

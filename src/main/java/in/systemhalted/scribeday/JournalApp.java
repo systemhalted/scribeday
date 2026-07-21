@@ -282,7 +282,8 @@ public class JournalApp extends Application {
         alert(Alert.AlertType.INFORMATION, "Welcome to ScribeDay",
                 "Click any day to write your first entry — it saves automatically.\n\n"
                         + "Ctrl+N starts today's entry · Ctrl+F searches · "
-                        + "the View menu switches between Calendar and Agenda.");
+                        + "the View menu switches between Calendar and Agenda.\n\n"
+                        + "Preferences (Ctrl+,) can set a daily reminder to keep your streak going.");
     }
 
     private void exportAll(Stage stage) {
