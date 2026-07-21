@@ -253,6 +253,37 @@ class JournalDaoTest {
     }
 
     @Test
+    void onThisDayReturnsPriorYearsNewestFirst() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2024, 7, 21), "two years ago", "body 2024");
+        dao.saveEntry(LocalDate.of(2025, 7, 21), "last year", "body 2025");
+        dao.saveEntry(LocalDate.of(2026, 7, 21), "today", "body 2026");     // current year: excluded
+        dao.saveEntry(LocalDate.of(2025, 7, 20), "other day", "not this day");
+        List<SearchHit> hits = dao.onThisDay(LocalDate.of(2026, 7, 21));
+        assertEquals(
+                List.of(LocalDate.of(2025, 7, 21), LocalDate.of(2024, 7, 21)),
+                hits.stream().map(SearchHit::date).toList());
+        assertEquals("last year", hits.get(0).title());
+        assertTrue(hits.get(0).snippet().contains("body 2025"));
+    }
+
+    @Test
+    void onThisDayEmptyWithoutHistory() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2026, 7, 21), "today", "only entry");
+        assertTrue(dao.onThisDay(LocalDate.of(2026, 7, 21)).isEmpty());
+    }
+
+    @Test
+    void onThisDayForLeapDayOnlyMatchesPriorLeapDays() {
+        JournalDao dao = freshDao();
+        dao.saveEntry(LocalDate.of(2024, 2, 29), "leap", "leap day entry");
+        dao.saveEntry(LocalDate.of(2025, 2, 28), "near miss", "not a leap day");
+        List<SearchHit> hits = dao.onThisDay(LocalDate.of(2028, 2, 29));
+        assertEquals(List.of(LocalDate.of(2024, 2, 29)), hits.stream().map(SearchHit::date).toList());
+    }
+
+    @Test
     void initIsIdempotent() {
         JournalDao dao = freshDao();
         dao.save(LocalDate.of(2026, 6, 9), "kept across re-init");

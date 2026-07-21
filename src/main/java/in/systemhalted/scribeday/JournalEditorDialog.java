@@ -2,6 +2,7 @@ package in.systemhalted.scribeday;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,12 +11,15 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -42,6 +46,7 @@ public class JournalEditorDialog extends Stage {
     private static final Duration AUTOSAVE_DELAY = Duration.millis(600);
 
     private final JournalDao dao;
+    private final Settings settings;
     private final LocalDate date;
     private final boolean dark;
     private final MarkdownRenderer markdown = new MarkdownRenderer();
@@ -59,6 +64,7 @@ public class JournalEditorDialog extends Stage {
 
     public JournalEditorDialog(Window owner, JournalDao dao, Settings settings, LocalDate date) {
         this.dao = dao;
+        this.settings = settings;
         this.date = date;
         this.dark = settings.theme() == Theme.DARK;
 
@@ -112,9 +118,11 @@ public class JournalEditorDialog extends Stage {
         root.setPadding(new Insets(12));
         root.setTop(new VBox(8, titleField));
         root.setCenter(textArea);
-        root.setBottom(bottom);
         BorderPane.setMargin(textArea, new Insets(4, 0, 0, 0));
-        BorderPane.setMargin(bottom, new Insets(10, 0, 0, 0));
+
+        TitledPane onThisDay = buildOnThisDayPane();
+        root.setBottom(onThisDay == null ? bottom : new VBox(10, onThisDay, bottom));
+        BorderPane.setMargin(root.getBottom(), new Insets(10, 0, 0, 0));
 
         setOnHidden(e -> {
             debounce.stop();
@@ -125,6 +133,45 @@ public class JournalEditorDialog extends Stage {
 
         setScene(new Scene(root, 580, 480));
         settings.theme().applyTo(getScene());
+    }
+
+    /**
+     * A collapsed pane listing this day's entries from earlier years, or
+     * {@code null} when there are none. Opening one shows it in a nested editor.
+     */
+    private TitledPane buildOnThisDayPane() {
+        List<SearchHit> hits = dao.onThisDay(date);
+        if (hits.isEmpty()) {
+            return null;
+        }
+        ListView<SearchHit> list = new ListView<>();
+        list.getItems().setAll(hits);
+        list.setCellFactory(v -> new EntryListCell());
+        list.setPrefHeight(110);
+        list.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
+                openPastEntry(list);
+            }
+        });
+        list.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                openPastEntry(list);
+            }
+        });
+
+        TitledPane pane = new TitledPane(
+                "On this day · " + hits.size() + (hits.size() == 1 ? " past entry" : " past entries"),
+                list);
+        pane.setExpanded(false);
+        pane.setAnimated(false);
+        return pane;
+    }
+
+    private void openPastEntry(ListView<SearchHit> list) {
+        SearchHit hit = list.getSelectionModel().getSelectedItem();
+        if (hit != null) {
+            new JournalEditorDialog(this, dao, settings, hit.date()).showAndWait();
+        }
     }
 
     /** One toggle per mood; selecting (or clearing) a mood autosaves like typing does. */

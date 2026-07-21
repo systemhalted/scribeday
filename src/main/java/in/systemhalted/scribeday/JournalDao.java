@@ -479,6 +479,37 @@ public class JournalDao {
         return entries;
     }
 
+    /**
+     * Entries from earlier years on the same month and day as {@code date},
+     * newest first, each with a short content preview. Relies on ISO
+     * {@code yyyy-MM-dd} storage: the month-day is a suffix match and the year a
+     * string comparison.
+     */
+    public List<SearchHit> onThisDay(LocalDate date) {
+        String sql = """
+                SELECT entry_date, title, substr(content, 1, 140) AS preview
+                FROM entries
+                WHERE substr(entry_date, 6) = ? AND substr(entry_date, 1, 4) < ?
+                ORDER BY entry_date DESC
+                """;
+        List<SearchHit> hits = new ArrayList<>();
+        try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, date.toString().substring(5));
+            ps.setString(2, String.valueOf(date.getYear()));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    hits.add(new SearchHit(
+                            LocalDate.parse(rs.getString("entry_date")),
+                            rs.getString("title"),
+                            rs.getString("preview")));
+                }
+            }
+        } catch (SQLException e) {
+            throw new JournalException("Failed to load past entries for " + date, e);
+        }
+        return hits;
+    }
+
     /** Unchecked wrapper so UI code can surface DB errors without checked-exception noise. */
     public static class JournalException extends RuntimeException {
         public JournalException(String message, Throwable cause) {
